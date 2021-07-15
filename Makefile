@@ -2,11 +2,13 @@
 RM = rm -f
 MKDIR = mkdir -p
 7ZA = 7za
+UNZIP = unzip 
 
 BUILDD ?= build
 SRCD ?= src
 
-EXECUTABLE ?= $(BUILDD)/main
+DATABASE   ?= database.zip
+EXECUTABLE ?= $(BUILDD)/sql
 ZIPFILE ?= ../zipfile.zip
 CFILES = $(wildcard $(SRCD)/*.c)
 OFILES = $(patsubst %.c,%.o, $(CFILES))
@@ -20,13 +22,16 @@ all: $(EXECUTABLE)
 
 clean:
 	@$(RM) $(OFILES)
-	@$(RM) -r $(BUILDD)
 	@$(RM) $(ZIPFILE)
+	@$(RM) -r $(BUILDD)
+	@$(RM) $(EXECUTABLE)
 
 zip: clean
+	@$(UNZIP) -d $(BUILDD) $(DATABASE)
 	@$(7ZA) a $(ZIPFILE) ./*
 
 run: $(EXECUTABLE)
+	@$(UNZIP) -u -d $(BUILDD) $(DATABASE)
 	./$(EXECUTABLE)
 
 
