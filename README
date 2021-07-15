@@ -1,0 +1,6 @@
+Programas: 
+    main.c          -- main
+    sqlinterpret.c  -- lê o input de stdin e separa as instruções de SQL
+    dataframe.c     -- (from) lê arquivos e, para cada linha, coloca os valores em arrays diferentes dependendo da propriedades
+    sqldo.c         -- (select e where) pega as instruções e o dataframe e cria um novo dataframe do que deve ser printado
+
