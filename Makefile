@@ -23,11 +23,10 @@ all: $(EXECUTABLE)
 clean:
 	@$(RM) $(OFILES)
 	@$(RM) $(ZIPFILE)
-	@$(RM) -r $(BUILDD)
 	@$(RM) $(EXECUTABLE)
 
 zip: clean prepare_db
-	.$(7ZA) a $(ZIPFILE) ./*
+	$(7ZA) a $(ZIPFILE) ./*
 
 prepare_db:
 	@$(MKDIR) $(BUILDD)
