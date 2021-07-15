@@ -2,7 +2,7 @@
 RM = rm -f
 MKDIR = mkdir -p
 7ZA = 7za
-UNZIP = unzip 
+UNZIP = unzip -qq
 
 BUILDD ?= build
 SRCD ?= src
@@ -16,7 +16,7 @@ OFILES = $(patsubst %.c,%.o, $(CFILES))
 CFLAGS += -Wall
 
 
-.PHONY: all clean zip run
+.PHONY: all clean zip run prepare_db
 
 all: $(EXECUTABLE)
 
@@ -26,12 +26,14 @@ clean:
 	@$(RM) -r $(BUILDD)
 	@$(RM) $(EXECUTABLE)
 
-zip: clean
-	@$(UNZIP) -d $(BUILDD) $(DATABASE)
-	@$(7ZA) a $(ZIPFILE) ./*
+zip: clean prepare_db
+	.$(7ZA) a $(ZIPFILE) ./*
+
+prepare_db:
+	@$(MKDIR) $(BUILDD)
+	$(UNZIP) -u -d $(BUILDD) $(DATABASE)
 
 run: $(EXECUTABLE)
-	@$(UNZIP) -u -d $(BUILDD) $(DATABASE)
 	./$(EXECUTABLE)
 
 
