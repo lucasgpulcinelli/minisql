@@ -18,12 +18,15 @@
 long int read_header(char* line_buffer, char***keys);
 
 //igual a append_df, mas usando uma linha tsv ao invez de uma coluna ja separada
-
 int append_df_line(dataframe* df, char* line_buffer);
+
 //pega uma linha separada por tabs com cols valores e retorna esses valores separados em dest
 //assume que o input foi lido com fgets (sempre tem um \n no final)
 //retorna != 0 em caso de erro 
 int separate_tabs(char* line_buffer, unsigned int cols, char** dest);
+
+//escreve em fptr os valores de values (de tamanho size) separados por tab
+void write_tsv_row(FILE* fptr, char** values, unsigned int size);
 
 
 int separate_tabs(char* line_buffer, unsigned int cols, char** dest)
@@ -135,6 +138,15 @@ int append_df_line(dataframe* df, char* line_buffer)
 
     separate_tabs(line_buffer, df->cols, df->values[df->rows++]);
     return 0;
+}
+
+void write_tsv_row(FILE* fptr, char** values, unsigned int size)
+{
+    for(int i = 0; i < size-1; i++)
+    {
+        fprintf(fptr, "%s\t", values[i]);
+    }
+    fprintf(fptr, "%s\n", values[size-1]);
 }
 
 
@@ -295,7 +307,17 @@ int append_df(dataframe* df, char** value)
 
 void write_df(FILE* fptr, dataframe* df, int with_header)
 {
-    return;
+    //no runcodes nao se pode colocar o header,
+    //mas e tao facil e faz tanto sentido que eu preferi adicionar a opcao
+    if(with_header)
+    {
+        write_tsv_row(fptr, df->keys, df->cols);
+    }
+
+    for(int i = 0; i < df->rows; i++)
+    {
+       write_tsv_row(fptr, df->values[i], df->cols);
+    }
 }
 
 void delete_many_dfs(dataframe** dflist, unsigned int size)
