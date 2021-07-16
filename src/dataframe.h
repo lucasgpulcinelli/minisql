@@ -36,7 +36,7 @@ dataframe* read_df(char* filename);
 int append_df(dataframe* df, char** value);
 
 //coloca em fptr as informacoes do dataframe df, com o sem o header
-dataframe* print_df(FILE* fptr, dataframe* df, int with_header);
+void write_df(FILE* fptr, dataframe* df, int with_header);
 
 //deleta dataframes
 void delete_many_dfs(dataframe** dflist, unsigned int size);
