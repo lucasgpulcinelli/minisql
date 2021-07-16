@@ -9,9 +9,20 @@
 #define FGETS_MAXLEN      256
 
 
-//helper functions
+//funcoes usadas internamente:
+
+
+//separa as diferentes keys contidas em line_buffer e coloca em *keys
+//assume que *keys nao foi alocado (por nao saber a quantidade de colunas), por isso o ponteiro para essa variavel
+//retorna a quantidade de valores separados por tabs em keys (colunas do dataframe / tamanho de *keys)
 long int read_header(char* line_buffer, char***keys);
+
+//igual a append_df, mas usando uma linha tsv ao invez de uma coluna ja separada
+
 int append_df_line(dataframe* df, char* line_buffer);
+//pega uma linha separada por tabs com cols valores e retorna esses valores separados em dest
+//assume que o input foi lido com fgets (sempre tem um \n no final)
+//retorna != 0 em caso de erro 
 int separate_tabs(char* line_buffer, unsigned int cols, char** dest);
 
 
@@ -20,6 +31,7 @@ int separate_tabs(char* line_buffer, unsigned int cols, char** dest)
     int got_null = 0;
     char* last_tab = line_buffer;
     int i;
+    //strchr retorna o ponteiro para a primeira ocorrencia de \t em lat_tab, ou NULL caso nao exista
     for(i = 0; i < cols-1; i++, last_tab = strchr(last_tab, '\t')+1)
     {
         unsigned int size = (unsigned int) (strchr(last_tab, '\t') - last_tab);
@@ -29,6 +41,7 @@ int separate_tabs(char* line_buffer, unsigned int cols, char** dest)
             got_null = 1;
             break;
         }
+        //o strncpy prefere colocar o \0 no final do que usar size+1 para ele
         strncpy(dest[i], last_tab, size);
     }
 
@@ -41,6 +54,7 @@ int separate_tabs(char* line_buffer, unsigned int cols, char** dest)
         return -1;
     }
 
+    //ultimo valor e especial, strchr(last_tab, '\t') retornaria NULL
     unsigned int size = (unsigned int) (strchr(last_tab, '\n') - last_tab);
     dest[cols-1] = malloc(sizeof(char) * size);
     if(dest[cols-1] == NULL)
@@ -56,7 +70,7 @@ int separate_tabs(char* line_buffer, unsigned int cols, char** dest)
     return 0;
 }
 
-long int read_header(char* line_buffer, char***keys)
+long int read_header(char* line_buffer, char*** keys)
 {
     //descobre quantas colunas o header tem
     int cols = 1;
@@ -249,6 +263,7 @@ dataframe* read_df(char* filename)
         return NULL;   
     }
     
+    //inicializa o nome
     df->name = malloc(sizeof(char) * (strlen(filename)+1));
     if(df->name == NULL)
     {
@@ -263,6 +278,7 @@ dataframe* read_df(char* filename)
     }
     strcpy(df->name, filename);
 
+    //para cada linha no input ate o EOF coloca no dataframe
     while(fgets(line_buffer, FGETS_MAXLEN, fptr) != NULL)
     {
         append_df_line(df, line_buffer);
@@ -281,8 +297,6 @@ void write_df(FILE* fptr, dataframe* df, int with_header)
 {
     return;
 }
-
-
 
 void delete_many_dfs(dataframe** dflist, unsigned int size)
 {
@@ -310,6 +324,8 @@ void delete_df(dataframe* df)
         free(df->values[i]);
     }
 
+    //de rows ate _rows_maxsize o df tem memoria alocada para uma proxima row,
+    //mas nao para a string dentro dela
     for(int i = df->rows; i < df->_rows_maxsize; i++)
     {
         free(df->values[i]);
