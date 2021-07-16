@@ -12,7 +12,7 @@ valores: valores na mesma ordem que chaves
 rows: linhas no total
 cols: colunas no total (mesmo tamanho que keys)
 
-_maxsize: tamanhos maximos alocados (util para append)
+_rows_maxsize: tamanho maximo de linhas que o dataframe tem alocado (util para append_df)
 */
 typedef struct
 {
@@ -21,18 +21,15 @@ typedef struct
     char*** values; 
     unsigned int rows;
     unsigned int cols;
-
-    struct
-    {
-        unsigned int rows;
-        unsigned int cols;
-    } _maxsize;
-
+    unsigned int _rows_maxsize;
 } dataframe;
+
+//cria dataframes vazios
+dataframe* create_df(char** keys, unsigned int cols);
 
 //le arquivos .tsv de nome filename e retorna um dataframe com as informacoes
 //em filename nao se deve colocar o .tsv no final
-dataframe** read_many_dfs(char** filenames);
+dataframe** read_many_dfs(char** filenames, unsigned int size);
 dataframe* read_df(char* filename);
 
 //coloca o valor value no final do dataframe df
@@ -42,7 +39,7 @@ int append_df(dataframe* df, char** value);
 dataframe* print_df(FILE* fptr, dataframe* df, int with_header);
 
 //deleta dataframes
-void delete_many_dfs(dataframe** dflist);
+void delete_many_dfs(dataframe** dflist, unsigned int size);
 void delete_df(dataframe* df);
 
 
