@@ -8,11 +8,3 @@ Programas:
 Como rodar:  
     make prepare_db para unzippar o arquivo de database  
     make run para compilar e rodar o programa  
-
-
-Tutorial git:  
-    git pull  
-    git add .  
-    git status  
-    git commit  
-    git push origin tentativa2  
