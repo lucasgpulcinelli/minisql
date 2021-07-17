@@ -344,6 +344,7 @@ void delete_many_dfs(dataframe** dflist, unsigned int size)
     {
         delete_df(dflist[i]);
     }
+    free(dflist);
     return;
 }
 
