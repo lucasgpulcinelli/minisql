@@ -3,7 +3,6 @@
 
 #include "utils.h"
 
-
 int separate_character(char* line_buffer, unsigned int cols, char** dest, char* delim)
 {
     int got_null = 0;
@@ -32,4 +31,22 @@ int separate_character(char* line_buffer, unsigned int cols, char** dest, char* 
     }
 
     return 0;
+}
+
+int get_ncols(char *string){
+    int cols = 0;
+    int i = 0;
+
+    while(string[i]!='\0')
+    {
+        /* check whether the current character is white space or new line or tab character*/
+        if(string[i]==' ' || string[i]=='\n' || string[i]=='\t')
+        {
+            cols++;
+        }
+
+        i++;
+    }
+
+    return cols;
 }
