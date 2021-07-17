@@ -4,13 +4,13 @@
 #include <stdlib.h>
 
 #include "dataframe.h"
+#include "utils.h"
 
 #define INIT_ROWS_MAXSIZE  32
 #define FGETS_MAXLEN      256
 
 
 //funcoes usadas internamente:
-
 
 //separa as diferentes keys contidas em line_buffer e coloca em *keys
 //assume que *keys nao foi alocado (por nao saber a quantidade de colunas), por isso o ponteiro para essa variavel
@@ -20,67 +20,21 @@ long int read_header(char* line_buffer, char***keys);
 //igual a append_df, mas usando uma linha tsv ao invez de uma coluna ja separada
 int append_df_line(dataframe* df, char* line_buffer);
 
-//pega uma linha separada por tabs com cols valores e retorna esses valores separados em dest
-//assume que o input foi lido com fgets (sempre tem um \n no final)
-//retorna != 0 em caso de erro 
-int separate_tabs(char* line_buffer, unsigned int cols, char** dest);
-
 //escreve em fptr os valores de values (de tamanho size) separados por tab
 void write_tsv_row(FILE* fptr, char** values, unsigned int size);
 
+//aumenta o tamanho das rows de df
+int df_increase_size(dataframe* df);
 
-int separate_tabs(char* line_buffer, unsigned int cols, char** dest)
-{
-    int got_null = 0;
-    char* last_tab = line_buffer;
-    int i;
-    //strchr retorna o ponteiro para a primeira ocorrencia de \t em lat_tab, ou NULL caso nao exista
-    for(i = 0; i < cols-1; i++, last_tab = strchr(last_tab, '\t')+1)
-    {
-        unsigned int size = (unsigned int) (strchr(last_tab, '\t') - last_tab);
-        dest[i] = malloc(sizeof(char) * size);
-        if(dest[i] == NULL)
-        {
-            got_null = 1;
-            break;
-        }
-        //o strncpy prefere colocar o \0 no final do que usar size+1 para ele
-        strncpy(dest[i], last_tab, size);
-    }
-
-    if(got_null)
-    {
-        for(int j = 0; j < i; j++)
-        {
-            free(dest[i]);
-        }
-        return -1;
-    }
-
-    //ultimo valor e especial, strchr(last_tab, '\t') retornaria NULL
-    unsigned int size = (unsigned int) (strchr(last_tab, '\n') - last_tab);
-    dest[cols-1] = malloc(sizeof(char) * size);
-    if(dest[cols-1] == NULL)
-    {
-        for(int j = 0; j < cols-1; j++)
-        {
-            free(dest[i]);
-        }
-        return -1;
-    }
-    strncpy(dest[cols-1], last_tab, size);
-
-    return 0;
-}
 
 long int read_header(char* line_buffer, char*** keys)
 {
     //descobre quantas colunas o header tem
-    int cols = 1;
+    unsigned int cols = 1;
     char* last_tab = line_buffer;
     while((last_tab = strchr(last_tab, '\t')) != NULL)
     {
-        last_tab++;
+        last_tab++; //pula o caractere de tab
         cols++;
     }
 
@@ -91,8 +45,7 @@ long int read_header(char* line_buffer, char*** keys)
         return -1;
     }
 
-    int ret = separate_tabs(line_buffer, cols, *keys);
-    if(ret != 0)
+    if(separate_character(line_buffer, cols, *keys, "\t"))
     {
         return -1;
     }
@@ -100,44 +53,52 @@ long int read_header(char* line_buffer, char*** keys)
     return cols;
 }
 
+int df_increase_size(dataframe* df)
+{
+    char*** newvalues = realloc(df->values, sizeof(char**) * df->_rows_maxsize*2);
+    if(newvalues == NULL)
+    {
+        return -1;
+    }
+    df->values = newvalues;
+
+    int got_null = 0;
+    unsigned int i;
+    for(i = df->_rows_maxsize; i < df->_rows_maxsize*2; i++)
+    {
+        df->values[i] = malloc(sizeof(char*) * df->cols);
+        if(df->values[i] == NULL)
+        {
+            got_null = 1;
+            break;
+        }
+    }
+
+    if(got_null)
+    {
+        for(unsigned int j = df->_rows_maxsize; j < i; j++)
+        {
+            free(df->values[j]);
+        }
+        return -1;
+    }
+    df->_rows_maxsize *= 2;
+
+    return 0;
+}
+
 int append_df_line(dataframe* df, char* line_buffer)
 {
     //realoca memoria se necessario
     if(df->_rows_maxsize < df->rows+1)
     {        
-        char*** newvalues = realloc(df->values, sizeof(char**) * df->_rows_maxsize*2);
-        if(newvalues == NULL)
+        if(df_increase_size(df))
         {
             return -1;
         }
-        df->values = newvalues;
-
-        int got_null = 0;
-        unsigned int i;
-        for(i = df->_rows_maxsize; i < df->_rows_maxsize*2; i++)
-        {
-            df->values[i] = malloc(sizeof(char*) * df->cols);
-            if(df->values[i] == NULL)
-            {
-                got_null = 1;
-                break;
-            }
-        }
-
-        if(got_null)
-        {
-            for(unsigned int j = df->_rows_maxsize; j < i; j++)
-            {
-                free(df->values[j]);
-            }
-            return -1;
-        }
-
-        df->_rows_maxsize *= 2;
     }
 
-    separate_tabs(line_buffer, df->cols, df->values[df->rows++]);
-    return 0;
+    return separate_character(line_buffer, df->cols, df->values[df->rows++], "\t");
 }
 
 void write_tsv_row(FILE* fptr, char** values, unsigned int size)
@@ -251,6 +212,7 @@ dataframe* read_df(char* filename)
         fclose(fptr);
         return NULL;
     }
+    line_buffer[strlen(line_buffer)-1] = '\0';
 
     //cria as keys
     char** keys;
@@ -293,7 +255,13 @@ dataframe* read_df(char* filename)
     //para cada linha no input ate o EOF coloca no dataframe
     while(fgets(line_buffer, FGETS_MAXLEN, fptr) != NULL)
     {
-        append_df_line(df, line_buffer);
+        line_buffer[strlen(line_buffer)-1] = '\0';
+        if(append_df_line(df, line_buffer))
+        {
+            delete_df(df);
+            fclose(fptr);
+            return NULL;
+        }
     }
 
     fclose(fptr);
@@ -302,7 +270,52 @@ dataframe* read_df(char* filename)
 
 int append_df(dataframe* df, char** value)
 {
-    return -1;
+    //realoca memoria se necessario
+    if(df->_rows_maxsize < df->rows+1)
+    {        
+        if(df_increase_size(df))
+        {
+            return -1;
+        }
+    }
+
+    int got_null = 0;
+    int i;
+    for(i = 0; i < df->cols; i++)
+    {
+        df->values[df->rows][i] = malloc(sizeof(char) * (strlen(value[i])+1));
+        if(df->values[df->rows][i] == NULL)
+        {
+            got_null = 1;
+            break;
+        }
+        strcpy(df->values[df->rows][i], value[i]);
+    }
+
+    if(got_null)
+    {
+        for(int j = 0; j < i; j++)
+        {
+            free(df->values[df->rows][i]);
+        }
+        return -1;
+    }
+
+    df->rows++;
+    return 0;
+}
+
+char* df_at(dataframe* df, unsigned int row, char* key)
+{
+    for(int i = 0; i < df->cols; i++)
+    {
+        if(strcmp(df->keys[i], key) == 0)
+        {
+            return df->keys[i];
+        }
+    }
+
+    return NULL;
 }
 
 void write_df(FILE* fptr, dataframe* df, int with_header)

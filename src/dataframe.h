@@ -35,6 +35,9 @@ dataframe* read_df(char* filename);
 //coloca o valor value no final do dataframe df
 int append_df(dataframe* df, char** value);
 
+//pega o valor de df com linha row e coluna key
+char* df_at(dataframe* df, unsigned int row, char* key);
+
 //coloca em fptr as informacoes do dataframe df, com o sem o header
 void write_df(FILE* fptr, dataframe* df, int with_header);
 
