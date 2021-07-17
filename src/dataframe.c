@@ -307,11 +307,16 @@ int append_df(dataframe* df, char** value)
 
 char* df_at(dataframe* df, unsigned int row, char* key)
 {
+    if(row >= df->rows)
+    {
+        return NULL;
+    }
+
     for(int i = 0; i < df->cols; i++)
     {
         if(strcmp(df->keys[i], key) == 0)
         {
-            return df->keys[i];
+            return df->values[row][i];
         }
     }
 
