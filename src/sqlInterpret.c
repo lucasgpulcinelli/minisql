@@ -11,20 +11,32 @@
 #define watch(var) printf("%i\n", var)
 #define show(var) printf("%s\n", var)
 
-void commandGap(int *startIndex, int *size, char *begin, char *final, char **instArray){
-    int i = 0;
+stringArray getInstructions(){
+    char *rawInstructions = malloc(sizeof(char) * SIZE);
 
-    while (instArray[i] != NULL)
-    {
-        if(!strcmp(instArray[i], begin)){
-            *startIndex = i + 1;
-        }
-        if(!strcmp(instArray[i], final)){           
-            break;
-        }
-        i++;
-    }
-    *size = i - *startIndex;
+    fgets(rawInstructions, SIZE, stdin);
+    int allocationSize = strlen(rawInstructions);
+
+    rawInstructions = realloc(rawInstructions, sizeof(char) * allocationSize + 1);
+    
+    stringArray instArray; 
+    instArray.size = get_ncols(rawInstructions);
+    instArray.str = malloc(sizeof(char *) * instArray.size);
+    separate_character(rawInstructions, instArray.size, instArray.str, " ");
+
+    free(rawInstructions);
+
+    return instArray;
+}
+
+command *separateCommands(stringArray instructionsArray){
+    command *instruction = malloc(sizeof(command) * 1);
+
+    instruction->from.str = getSourceFiles(instructionsArray.str, &instruction->from.size);
+    /*instruction->where = getConditions(rawInstructions);
+    instruction->select = getSelection(rawInstructions);*/
+
+    freePointers(instruction, instructionsArray);
 }
 
 char** getSourceFiles(char **instArray, int *numberOfFiles){
@@ -46,47 +58,34 @@ char** getSourceFiles(char **instArray, int *numberOfFiles){
     return output;
 }
 
-command *separateCommands(char **instructionsArray){
-    command *instruction = malloc(sizeof(command) * 1);
+void commandGap(int *startIndex, int *size, char *begin, char *final, char **instArray){
+    int i = 0;
 
-    instruction->from.fileNames = getSourceFiles(instructionsArray, &instruction->from.amount);
-    /*instruction->where = getConditions(rawInstructions);
-    instruction->select = getSelection(rawInstructions);*/
-
-    freePointers(instruction, instructionsArray);
-}
-
-char **getInstructions(){
-    char *rawInstructions = malloc(sizeof(char) * SIZE);
-
-    fgets(rawInstructions, SIZE, stdin);
-    int allocationSize = strlen(rawInstructions);
-
-    rawInstructions = realloc(rawInstructions, sizeof(char) * allocationSize + 1);
-    
-    int ncols = get_ncols(rawInstructions);
-    char **instArray = malloc(sizeof(char *) * ncols);
-    separate_character(rawInstructions, ncols, instArray, " ");
-
-    free(rawInstructions);
-
-    return instArray;
-}
-
-void freePointers(command *instruction, char **instructionsArray){
-    for (int i = 0; i < instruction->from.amount; i++)
+    while (instArray[i] != NULL)
     {
-        free(instruction->from.fileNames[i]);
+        if(!strcmp(instArray[i], begin)){
+            *startIndex = i + 1;
+        }
+        if(!strcmp(instArray[i], final)){           
+            break;
+        }
         i++;
     }
-    free(instruction->from.fileNames);
+    *size = i - *startIndex;
+}
+
+void freePointers(command *instruction, stringArray instructionsArray){
+    for (int i = 0; i < instruction->from.size; i++)
+    {
+        free(instruction->from.str[i]);
+        i++;
+    }
+    free(instruction->from.str);
     free(instruction);
 
-    int i = 0;
-    while(instructionsArray[i] != NULL){ //this needs to be fixed because is a problem for valgrind
-        free(instructionsArray[i]);
-        i++;
+    for(int i = 0; i < instructionsArray.size; i++){ //this needs to be fixed because is a problem for valgrind
+        free(instructionsArray.str[i]);
     };
 
-    free(instructionsArray);
+    free(instructionsArray.str);
 }

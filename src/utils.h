@@ -15,4 +15,10 @@ int get_ncols(char *string);
 //remove um caracter especifico de uma string e subsitui por /0
 void removeChar(char *str, char remove);
 
+//struct para administrar um array de strings
+typedef struct{
+    char **str;
+    int size;
+}stringArray;
+
 #endif

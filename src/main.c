@@ -7,7 +7,7 @@
 
 int main(int argc, char** argv)
 {
-    char **rawInstructions = getInstructions();
+    stringArray rawInstructions = getInstructions();
     command *instruction = separateCommands(rawInstructions);
     return 0;
 }

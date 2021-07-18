@@ -1,6 +1,7 @@
 #ifndef __SQLINTERPRET_H__ 
 #define __SQLINTERPRET_H__
 
+#include "utils.h"
 typedef struct {
     char *fileName;
     char *key;
@@ -11,21 +12,21 @@ typedef struct {
     char *value;
 }condition;
 
-typedef struct{
-    char **fileNames;
-    int amount;
-}files;
-
 typedef struct {
-    files from;
+    stringArray from;
     condition *where;
     member *select;
 }command;
 
-char **getInstructions();
+stringArray getInstructions();
 
-void freePointers(command *instruction, char **instructionsArray);
+command *separateCommands(stringArray instructionsArray);
 
-command *separateCommands(char **instructionsArray);
+char** getSourceFiles(char **instArray, int *numberOfFiles);
+
+void commandGap(int *startIndex, int *size, char *begin, char *final, char **instArray);
+
+void freePointers(command *instruction, stringArray instructionsArray);
+
 
 #endif
