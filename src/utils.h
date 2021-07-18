@@ -13,8 +13,8 @@
 //retorna != 0 em caso de erro 
 int separate_character(char* line_buffer, unsigned int cols, char** dest, char* delim);
 
-//descobre o número de colunas em uma string
-int get_ncols(char *string);
+//descobre o número de colunas em uma string com delimitador delim
+unsigned int get_ncols(char *string, char delimiter);
 
 //remove um caracter especifico de uma string e subsitui por /0
 void removeChar(char *str, char remove);

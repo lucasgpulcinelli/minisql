@@ -17,7 +17,7 @@ stringArray getInstructions(){
     rawInstructions = realloc(rawInstructions, sizeof(char) * allocationSize + 1);
     
     stringArray instArray; 
-    instArray.size = get_ncols(rawInstructions);
+    instArray.size = get_ncols(rawInstructions, ' ');
     instArray.str = malloc(sizeof(char *) * instArray.size);
     separate_character(rawInstructions, instArray.size, instArray.str, " ");
 

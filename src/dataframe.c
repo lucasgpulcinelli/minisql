@@ -30,13 +30,7 @@ int df_increase_size(dataframe* df);
 long int read_header(char* line_buffer, char*** keys)
 {
     //descobre quantas colunas o header tem
-    unsigned int cols = 1;
-    char* last_tab = line_buffer;
-    while((last_tab = strchr(last_tab, '\t')) != NULL)
-    {
-        last_tab++; //pula o caractere de tab
-        cols++;
-    }
+    unsigned int cols = get_ncols(line_buffer, '\t');
 
     //cria as keys
     *keys = malloc(sizeof(char**) * cols);
