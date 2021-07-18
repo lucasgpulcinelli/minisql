@@ -20,11 +20,11 @@ typedef struct {
 
 stringArray getInstructions();
 
-command *separateCommands(stringArray instructionsArray);
+command *processInstructions(stringArray instructionsArray);
 
-char** getSourceFiles(char **instArray, int *numberOfFiles);
+char** getSourceFiles(stringArray instArray, int *numberOfFiles);
 
-void commandGap(int *startIndex, int *size, char *begin, char *final, char **instArray);
+void isolateCommand(int *startIndex, int *size, char *begin, stringArray instArray);
 
 void freePointers(command *instruction, stringArray instructionsArray);
 

@@ -7,9 +7,6 @@
 #include "utils.h"
 
 #define SIZE 1024
-#define FUCK printf("FUCK: %i\n", __LINE__);
-#define watch(var) printf("%i\n", var)
-#define show(var) printf("%s\n", var)
 
 stringArray getInstructions(){
     char *rawInstructions = malloc(sizeof(char) * SIZE);
@@ -29,28 +26,28 @@ stringArray getInstructions(){
     return instArray;
 }
 
-command *separateCommands(stringArray instructionsArray){
+command *processInstructions(stringArray instructionsArray){
     command *instruction = malloc(sizeof(command) * 1);
 
-    instruction->from.str = getSourceFiles(instructionsArray.str, &instruction->from.size);
+    instruction->from.str = getSourceFiles(instructionsArray, &instruction->from.size);
     /*instruction->where = getConditions(rawInstructions);
     instruction->select = getSelection(rawInstructions);*/
 
     freePointers(instruction, instructionsArray);
 }
 
-char** getSourceFiles(char **instArray, int *numberOfFiles){
+char** getSourceFiles(stringArray instArray, int *numberOfFiles){
     int start;
-    commandGap(&start, numberOfFiles, FROM, WHERE, instArray);
+    isolateCommand(&start, numberOfFiles, FROM, instArray);
 
     char **output = malloc(*numberOfFiles * sizeof(char *));
 
     int i = 0;
     int finalIndex = start + *numberOfFiles;
     for(int j = start; j < finalIndex; j++){
-        int alocSize = strlen(instArray[j]);
+        int alocSize = strlen(instArray.str[j]);
         output[i] = malloc(sizeof(char) * alocSize + 1);
-        strcpy(output[i], instArray[j]);
+        strcpy(output[i], instArray.str[j]);
 
         removeChar(output[i], ',');
         i++;
@@ -58,18 +55,25 @@ char** getSourceFiles(char **instArray, int *numberOfFiles){
     return output;
 }
 
-void commandGap(int *startIndex, int *size, char *begin, char *final, char **instArray){
-    int i = 0;
+void isolateCommand(int *startIndex, int *size, char *COMMAND, stringArray instArray){
+    //select X from Y where X
+    //select X from Y
 
-    while (instArray[i] != NULL)
+    *startIndex = -1;
+    int i;
+    for(i = 0; i < instArray.size; i++)
     {
-        if(!strcmp(instArray[i], begin)){
+        if(!strcmp(instArray.str[i], COMMAND)){
             *startIndex = i + 1;
+            continue;
         }
-        if(!strcmp(instArray[i], final)){           
+
+        int isSelect = !strcmp(instArray.str[i], SELECT);
+        int isFrom = !strcmp(instArray.str[i], FROM);
+        int isWhere = !strcmp(instArray.str[i], WHERE);
+        if((isSelect || isFrom || isWhere) && *startIndex != -1){           
             break;
         }
-        i++;
     }
     *size = i - *startIndex;
 }
@@ -78,7 +82,6 @@ void freePointers(command *instruction, stringArray instructionsArray){
     for (int i = 0; i < instruction->from.size; i++)
     {
         free(instruction->from.str[i]);
-        i++;
     }
     free(instruction->from.str);
     free(instruction);

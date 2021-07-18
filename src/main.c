@@ -8,6 +8,6 @@
 int main(int argc, char** argv)
 {
     stringArray rawInstructions = getInstructions();
-    command *instruction = separateCommands(rawInstructions);
+    command *instruction = processInstructions(rawInstructions);
     return 0;
 }
