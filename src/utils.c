@@ -50,3 +50,16 @@ int get_ncols(char *string){
 
     return cols;
 }
+
+void removeChar(char *str, char remove){
+    int stringSize = strlen(str);
+
+    for(int k = 0; k < stringSize; k++){
+        if (str[k] == remove)
+        {
+            str[k] = '\0';
+            stringSize--;
+            break;
+        }
+    }
+}

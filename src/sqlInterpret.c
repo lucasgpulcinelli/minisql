@@ -3,77 +3,90 @@
 #include <stdlib.h>
 
 #include "sqlInterpret.h"
+#include "dataframe.h"
 #include "utils.h"
 
 #define SIZE 1024
 #define FUCK printf("FUCK: %i\n", __LINE__);
+#define watch(var) printf("%i\n", var)
+#define show(var) printf("%s\n", var)
 
-char** getSourceFiles(char **instArray){
-    int start, end;
+void commandGap(int *startIndex, int *size, char *begin, char *final, char **instArray){
     int i = 0;
 
     while (instArray[i] != NULL)
     {
-        if(!strcmp(instArray[i], FROM)){
-            start = i;
+        if(!strcmp(instArray[i], begin)){
+            *startIndex = i + 1;
         }
-        if(!strcmp(instArray[i], WHERE)){
-            end = i-1;
+        if(!strcmp(instArray[i], final)){           
+            break;
         }
         i++;
     }
+    *size = i - *startIndex;
+}
 
-    char **output = malloc(sizeof(char *) * end - start);
+char** getSourceFiles(char **instArray, int *numberOfFiles){
+    int start;
+    commandGap(&start, numberOfFiles, FROM, WHERE, instArray);
 
-    int j = start + 1;
-    i = 0;
-    while (j <= end)
-    {
-        int stringSize = strlen(instArray[j]);
-        for(int k = 0; k < stringSize; k++){
-            if (instArray[j][k] == ',')
-            {
-                instArray[j][k] = '\0';
-                stringSize--;
-                break;
-            }
-        }
+    char **output = malloc(*numberOfFiles * sizeof(char *));
 
-        output[i] = malloc(sizeof(char) * stringSize);
+    int i = 0;
+    int finalIndex = start + *numberOfFiles;
+    for(int j = start; j < finalIndex; j++){
+        int alocSize = strlen(instArray[j]);
+        output[i] = malloc(sizeof(char) * alocSize + 1);
         strcpy(output[i], instArray[j]);
-        j++;
+
+        removeChar(output[i], ',');
         i++;
     }
     return output;
 }
 
-void getInstructions(){
+command *separateCommands(char **instructionsArray){
+    command *instruction = malloc(sizeof(command) * 1);
+
+    instruction->from.fileNames = getSourceFiles(instructionsArray, &instruction->from.amount);
+    /*instruction->where = getConditions(rawInstructions);
+    instruction->select = getSelection(rawInstructions);*/
+
+    freePointers(instruction, instructionsArray);
+}
+
+char **getInstructions(){
     char *rawInstructions = malloc(sizeof(char) * SIZE);
 
     fgets(rawInstructions, SIZE, stdin);
     int allocationSize = strlen(rawInstructions);
 
-    rawInstructions = realloc(rawInstructions, sizeof(char) * allocationSize);
+    rawInstructions = realloc(rawInstructions, sizeof(char) * allocationSize + 1);
     
     int ncols = get_ncols(rawInstructions);
     char **instArray = malloc(sizeof(char *) * ncols);
-
     separate_character(rawInstructions, ncols, instArray, " ");
-    
-    command *instruction = malloc(sizeof(instruction) * 1);
 
-    instruction->from = getSourceFiles(instArray);
+    free(rawInstructions);
 
-    int i = 0;
-    while (instruction->from[i] != NULL)
+    return instArray;
+}
+
+void freePointers(command *instruction, char **instructionsArray){
+    for (int i = 0; i < instruction->from.amount; i++)
     {
-        printf("%s\n", instruction->from[i]);
+        free(instruction->from.fileNames[i]);
         i++;
     }
-    
+    free(instruction->from.fileNames);
+    free(instruction);
 
-    /*instruction->where = getConditions(rawInstructions);
-    instruction->select = getSelection(rawInstructions);
-    */
-    free(rawInstructions);
+    int i = 0;
+    while(instructionsArray[i] != NULL){ //this needs to be fixed because is a problem for valgrind
+        free(instructionsArray[i]);
+        i++;
+    };
+
+    free(instructionsArray);
 }

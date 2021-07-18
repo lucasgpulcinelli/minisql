@@ -11,13 +11,21 @@ typedef struct {
     char *value;
 }condition;
 
+typedef struct{
+    char **fileNames;
+    int amount;
+}files;
 
 typedef struct {
-    char **from;
+    files from;
     condition *where;
     member *select;
 }command;
 
-void getInstructions();
+char **getInstructions();
+
+void freePointers(command *instruction, char **instructionsArray);
+
+command *separateCommands(char **instructionsArray);
 
 #endif
