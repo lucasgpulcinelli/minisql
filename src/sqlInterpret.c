@@ -32,8 +32,8 @@ command *processInstructions(stringArray instructionsArray){
     instruction->from.str = getSourceFiles(instructionsArray, &instruction->from.size);
     /*instruction->where = getConditions(rawInstructions);
     instruction->select = getSelection(rawInstructions);*/
-
-    freePointers(instruction, instructionsArray);
+    
+    return instruction;
 }
 
 char** getSourceFiles(stringArray instArray, int *numberOfFiles){
