@@ -1,1 +1,0 @@
-select Progs.Sigla, Docentes.Nome, Trabalhos.Autor, Trabalho.Idioma, Docentes.Nacionalidade from Progs, Docentes, Trabalhos where Progs.Nivel = "7"
