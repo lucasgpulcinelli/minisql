@@ -57,6 +57,7 @@ char **getSourceFiles(stringArray instArray, int *numberOfFiles)
         strcpy(output[i], instArray.str[j]);
 
         removeChar(output[i], ',');
+        removeChar(output[i], '\n');
         i++;
     }
     return output;
