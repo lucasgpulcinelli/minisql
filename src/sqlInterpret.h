@@ -32,7 +32,7 @@ char** getSourceFiles(stringArray instArray, int *numberOfFiles);
 
 void isolateCommand(int *startIndex, int *size, char *begin, stringArray instArray);
 
-void freePointers(command *instruction, stringArray instructionsArray);
-
+//desaloca um command da memoria
+void freeCommand(command *instruction);
 
 #endif

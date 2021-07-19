@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "utils.h"
+#include "sqlInterpret.h"
 
 int separate_character(char* line_buffer, unsigned int cols, char** dest, char* delim)
 {
@@ -55,4 +56,38 @@ void removeChar(char *str, char remove){
             break;
         }
     }
+}
+
+void freeStrArray(stringArray instructionsArray){
+    for (int i = 0; i < instructionsArray.size; i++){
+        free(instructionsArray.str[i]);
+    };
+
+    free(instructionsArray.str);
+}
+
+void freeCommand(command *instruction)
+{
+    for (int i = 0; i < instruction->from.size; i++)
+    {
+        free(instruction->from.str[i]);
+    }
+    free(instruction->from.str);
+
+    for (int i = 0; i < instruction->selectSize; i++)
+    {
+        free(instruction->select[i].fileName);
+        free(instruction->select[i].key);
+    }
+    free(instruction->select);
+
+    for (int i = 0; i < instruction->whereSize; i++)
+    {
+        free(instruction->where[i].place->fileName);
+        free(instruction->where[i].place->key);
+        free(instruction->where[i].place);
+    }
+    free(instruction->where);
+
+    free(instruction);
 }

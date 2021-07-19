@@ -38,21 +38,7 @@ command *processInstructions(stringArray instructionsArray)
     instruction->where = getConditions(instructionsArray, &instruction->whereSize);
     instruction->select = getSelection(instructionsArray, &instruction->selectSize);
 
-    printf("From files: \n");
-    for (int i = 0; i < instruction->from.size; i++){
-        printf("\t%s.tsv\n", instruction->from.str[i]);
-    }
-    printf("Where conditions are: \n");
-    for (int i = 0; i < instruction->whereSize; i++){
-        printf("\tField: %s in File: %s.tsv is equal to %s\n", instruction->where[i].place->key, instruction->where[i].place->fileName, instruction->where[i].comparationValue);
-    }
-    printf("Select: \n");
-    for (int i = 0; i < instruction->selectSize; i++)
-    {
-        printf("\tFile: %s.tsv, Field: %s\n", instruction->select[i].fileName, instruction->select[i].key);
-    }
-    
-    freePointers(instruction, instructionsArray);
+    return instruction;
 }
 
 char **getSourceFiles(stringArray instArray, int *numberOfFiles)
@@ -106,7 +92,9 @@ condition *getConditions(stringArray instArray, int *amount){
     int start;
     isolateCommand(&start, amount, WHERE, instArray);
 
-    if(start < 0){return NULL;}
+    if(start < 0){
+        *amount = 0;
+        return NULL;}
 
     int finalIndex = start + *amount;
     *amount /= 3;
@@ -160,36 +148,4 @@ void isolateCommand(int *startIndex, int *size, char *COMMAND, stringArray instA
         }
     }
     *size = i - *startIndex;
-}
-
-void freePointers(command *instruction, stringArray instructionsArray)
-{
-    for (int i = 0; i < instruction->from.size; i++)
-    {
-        free(instruction->from.str[i]);
-    }
-    free(instruction->from.str);
-
-    for (int i = 0; i < instruction->selectSize; i++)
-    {
-        free(instruction->select[i].fileName);
-        free(instruction->select[i].key);
-    }
-    free(instruction->select);
-
-    for (int i = 0; i < instruction->whereSize; i++)
-    {
-        free(instruction->where[i].place->fileName);
-        free(instruction->where[i].place->key);
-        free(instruction->where[i].place);
-    }
-    free(instruction->where);
-
-    free(instruction);
-
-    for (int i = 0; i < instructionsArray.size; i++){
-        free(instructionsArray.str[i]);
-    };
-
-    free(instructionsArray.str);
 }
