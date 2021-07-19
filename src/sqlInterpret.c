@@ -20,7 +20,8 @@ stringArray getInstructions()
     show(rawInstructions);
 
     stringArray instArray;
-    instArray.size = get_ncols(rawInstructions);
+    instArray.size = get_ncols(rawInstructions, ' ');
+    
     instArray.str = malloc(sizeof(char *) * instArray.size);
     separate_character(rawInstructions, instArray.size, instArray.str, " ");
 

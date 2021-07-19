@@ -33,21 +33,14 @@ int separate_character(char* line_buffer, unsigned int cols, char** dest, char* 
     return 0;
 }
 
-int get_ncols(char *string){
-    int cols = 0;
-    int i = 0;
-
-    while(string[i]!='\0')
+unsigned int get_ncols(char *string, char delimiter){
+    unsigned int cols = 1;
+    char* last_occurance = string;
+    while((last_occurance = strchr(last_occurance, delimiter)) != NULL)
     {
-        /* check whether the current character is white space or new line or tab character*/
-        if(string[i]==' ' || string[i]=='\n' || string[i]=='\t')
-        {
-            cols++;
-        }
-
-        i++;
+        last_occurance++; //pula o caractere delimitador
+        cols++;
     }
-
     return cols;
 }
 
