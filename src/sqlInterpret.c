@@ -30,7 +30,7 @@ stringArray getInstructions()
     return instArray;
 }
 
-command *processInstructions(stringArray instructionsArray)
+command *generateCommand(stringArray instructionsArray)
 {
     command *instruction = malloc(sizeof(command) * 1);
 
