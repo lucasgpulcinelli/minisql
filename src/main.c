@@ -10,6 +10,6 @@ int main(int argc, char** argv)
     stringArray rawInstructions = getInstructions();
     command *instruction = processInstructions(rawInstructions);
     
-    freePointers(instruction, rawInstructions);
+    //freePointers(instruction, rawInstructions);
     return 0;
 }

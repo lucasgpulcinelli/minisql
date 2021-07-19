@@ -42,4 +42,4 @@ $(EXECUTABLE): $(OFILES)
 
 teste: src/main.c src/dataframe.c src/sqlInterpret.c src/utils.c
 	gcc -g -o program src/main.c src/dataframe.c src/sqlInterpret.c src/utils.c
-
+	valgrind --leak-check=full ./program < teste
