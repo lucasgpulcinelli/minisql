@@ -22,7 +22,7 @@ typedef struct {
 
 stringArray getInstructions();
 
-command *processInstructions(stringArray instructionsArray);
+command *generateCommand(stringArray instructionsArray);
 
 member *getSelection(stringArray instArray, int *amount);
 
@@ -32,7 +32,7 @@ char** getSourceFiles(stringArray instArray, int *numberOfFiles);
 
 void isolateCommand(int *startIndex, int *size, char *begin, stringArray instArray);
 
-//desaloca um command da memoria
+//dealoca um command da memoria
 void freeCommand(command *instruction);
 
 #endif

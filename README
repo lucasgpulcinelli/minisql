@@ -8,3 +8,9 @@ Programas:
 Como rodar:  
     make prepare_db para unzippar o arquivo de database  
     make run para compilar e rodar o programa  
+
+Convenção de formatação:
+    variáveis separadas com underscore (ex: foo_bar_val)
+    funções em lowerCamelCase (ex: fooIsBar)
+    structs em UpperCamelCase (ex: FooBarStruct)
+    abre chaves na mesma linha
