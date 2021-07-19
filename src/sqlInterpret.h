@@ -9,18 +9,24 @@ typedef struct {
 
 typedef struct {
     member *place;
-    char *value;
+    char *comparationValue;
 }condition;
 
 typedef struct {
     stringArray from;
     condition *where;
+    int whereSize;
     member *select;
+    int selectSize;
 }command;
 
 stringArray getInstructions();
 
 command *processInstructions(stringArray instructionsArray);
+
+member *getSelection(stringArray instArray, int *amount);
+
+condition *getConditions(stringArray instArray, int *amount);
 
 char** getSourceFiles(stringArray instArray, int *numberOfFiles);
 
