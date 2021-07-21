@@ -163,7 +163,7 @@ DataFrame** readManyDfs(char** filenames, unsigned int size){
     return dflist;
 }
 
-DataFrame* read_df(char* filename){
+DataFrame* readDf(char* filename){
     //cria o nome do arquivo com .tsv no final
     char tsvfilename[strlen(filename)+1+4]; //+1 para '\0' e +4 para ".tsv"
     strcpy(tsvfilename, filename);
