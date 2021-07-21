@@ -319,6 +319,12 @@ char* df_at(dataframe* df, unsigned int row, char* key)
 
 void write_df(FILE* fptr, dataframe* df, int with_header)
 {
+    if(df == NULL)
+    {
+        fprintf(stderr, "Erro, call para write_df foi chamado com df NULL\n");
+        return;
+    }
+
     //no runcodes nao se pode colocar o header,
     //mas e tao facil e faz tanto sentido que eu preferi adicionar a opcao
     if(with_header)
@@ -344,6 +350,11 @@ void delete_many_dfs(dataframe** dflist, unsigned int size)
 
 void delete_df(dataframe* df)
 {
+    if(df == NULL)
+    {
+        return;
+    }
+    
     for(int i = 0; i < df->cols; i++)
     {
         free(df->keys[i]);
