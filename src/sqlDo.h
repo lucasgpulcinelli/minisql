@@ -6,7 +6,7 @@
 #include "sqlInterpret.h"
 
 //cria um dataframe com as instrucoes de SQL processadas
-DataFrame* processCommand(command* instruction);
+DataFrame* processCommand(Command* instruction);
 
 
 #endif

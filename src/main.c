@@ -7,8 +7,8 @@
 
 int main(int argc, char** argv)
 {
-    stringArray raw_instructions = getInstructions();
-    command *instruction = generateCommand(raw_instructions);
+    StringArray raw_instructions = getInstructions();
+    Command *instruction = generateCommand(raw_instructions);
 
     DataFrame* out_df = processCommand(instruction);
     
