@@ -42,7 +42,7 @@ dataframe* processCommand(command* instruction)
 
         for(int j = 0; j < instruction->selectSize; j++)
         {
-            rowvalues[i] = df_at(dfs[0], i, instruction->select[j].key);
+            rowvalues[j] = df_at(dfs[0], i, instruction->select[j].key);
         }
 
         append_df(df_out, rowvalues);
