@@ -8,55 +8,54 @@
 
 #define SIZE 1024
 
-stringArray getInstructions()
-{
-    char *rawInstructions = malloc(sizeof(char) * SIZE);
+StringArray getInstructions(void){
+    char *raw_instructions = malloc(sizeof(char) * SIZE);
 
-    fgets(rawInstructions, SIZE, stdin);
-    int allocationSize = strlen(rawInstructions);
+    fgets(raw_instructions, SIZE, stdin);
+    int allocation_size = strlen(raw_instructions);
 
-    rawInstructions = realloc(rawInstructions, sizeof(char) * allocationSize + 1);
+    raw_instructions = realloc(raw_instructions, sizeof(char) * allocation_size + 1);
     
-    stringArray instArray;
-    instArray.size = get_ncols(rawInstructions, ' ');
+    StringArray inst_array;
+    inst_array.size = getNcols(raw_instructions, ' ');
     
-    instArray.str = malloc(sizeof(char *) * instArray.size);
-    separate_character(rawInstructions, instArray.size, instArray.str, " ");
+    inst_array.str = malloc(sizeof(char *) * inst_array.size);
+    separateCharacter(raw_instructions, inst_array.size, inst_array.str, " ");
 
-    free(rawInstructions);
+    free(raw_instructions);
 
-    return instArray;
+    return inst_array;
 }
 
-command *generateCommand(stringArray instructionsArray)
+Command *generateCommand(StringArray instructions_array)
 {
-    command *instruction = malloc(sizeof(command) * 1);
+    Command *instruction = malloc(sizeof(Command) * 1);
     xalloc(instruction)
 
-    instruction->from.str = getSourceFiles(instructionsArray, &instruction->from.size);
-    instruction->where = getConditions(instructionsArray, &instruction->whereSize);
-    instruction->select = getSelection(instructionsArray, &instruction->selectSize);
+    instruction->from.str = getSourceFiles(instructions_array, &instruction->from.size);
+    instruction->where = getConditions(instructions_array, &instruction->where_size);
+    instruction->select = getSelection(instructions_array, &instruction->select_size);
 
     return instruction;
 }
 
-char **getSourceFiles(stringArray instArray, int *numberOfFiles)
+char **getSourceFiles(StringArray inst_array, int *number_of_files)
 {
     int start;
-    isolateCommand(&start, numberOfFiles, FROM, instArray);
+    isolateCommand(&start, number_of_files, FROM, inst_array);
 
-    char **output = malloc(*numberOfFiles * sizeof(char *));
+    char **output = malloc(*number_of_files * sizeof(char *));
     xalloc(output)
 
     int i = 0;
-    int finalIndex = start + *numberOfFiles;
-    for (int j = start; j < finalIndex; j++)
+    int final_index = start + *number_of_files;
+    for (int j = start; j < final_index; j++)
     {
-        int alocSize = strlen(instArray.str[j]);
-        output[i] = malloc(sizeof(char) * alocSize + 1);
+        int aloc_size = strlen(inst_array.str[j]);
+        output[i] = malloc(sizeof(char) * aloc_size + 1);
         xalloc(output[i])
 
-        strcpy(output[i], instArray.str[j]);
+        strcpy(output[i], inst_array.str[j]);
 
         removeChar(output[i], ',');
         removeChar(output[i], '\n');
@@ -65,25 +64,24 @@ char **getSourceFiles(stringArray instArray, int *numberOfFiles)
     return output;
 }
 
-member *getSelection(stringArray instArray, int *amount)
+Member *getSelection(StringArray inst_array, int *amount)
 {
     int start;
-    isolateCommand(&start, amount, SELECT, instArray);
+    isolateCommand(&start, amount, SELECT, inst_array);
 
-    member *output = malloc(*amount * sizeof(member));
+    Member *output = malloc(*amount * sizeof(Member));
     xalloc(output)
 
-    int i = 0;
-    int finalIndex = start + *amount;
-    for (int j = start; j < finalIndex; j++)
+    int final_index = start + *amount;
+    for (int i = 0, j = start; j < final_index; i++, j++)
     {
         char **holder = malloc(sizeof(char *) * 2);
         xalloc(holder)
 
-        removeChar(instArray.str[j], ',');
-        separate_character(instArray.str[j], 2, holder, ".");
+        removeChar(inst_array.str[j], ',');
+        separateCharacter(inst_array.str[j], 2, holder, ".");
 
-        output[i].fileName = holder[0];
+        output[i].file_name = holder[0];
         output[i].key = holder[1];
 
         free(holder);
@@ -94,36 +92,36 @@ member *getSelection(stringArray instArray, int *amount)
     return output;
 }
 
-condition *getConditions(stringArray instArray, int *amount){
+Condition *getConditions(StringArray inst_array, int *amount){
     int start;
-    isolateCommand(&start, amount, WHERE, instArray);
+    isolateCommand(&start, amount, WHERE, inst_array);
 
     if(start < 0){
         *amount = 0;
         return NULL;
     }
 
-    int finalIndex = start + *amount;
+    int final_index = start + *amount;
     *amount /= 3;
 
-    condition *output = malloc(*amount * sizeof(condition));
+    Condition *output = malloc(*amount * sizeof(Condition));
     xalloc(output)
 
-    for (int j = start, i = 0; j < finalIndex; j++, i++)
+    for (int j = start, i = 0; j < final_index; j++, i++)
     {
         char **holder = malloc(sizeof(char *) * 2);
         xalloc(holder)
-        separate_character(instArray.str[j], 2, holder, ".");
+        separateCharacter(inst_array.str[j], 2, holder, ".");
 
-        output[i].place = malloc(sizeof(member));
+        output[i].place = malloc(sizeof(Member));
         xalloc(output[i].place)
 
-        output[i].place->fileName = holder[0];
+        output[i].place->file_name = holder[0];
         output[i].place->key= holder[1];
 
         j += 2; //jumps the = sign
-        removeChar(instArray.str[j], ',');
-        output[i].comparationValue = instArray.str[j];
+        removeChar(inst_array.str[j], ',');
+        output[i].comparation_value = inst_array.str[j];
 
         free(holder);
     }
@@ -131,28 +129,47 @@ condition *getConditions(stringArray instArray, int *amount){
     return output;
 }
 
-void isolateCommand(int *startIndex, int *size, char *COMMAND, stringArray instArray)
+void isolateCommand(int *start_index, int *size, char *COMMAND, StringArray inst_array)
 {
-    //select X from Y where X
-    //select X from Y
-
-    *startIndex = -1;
+    *start_index = -1;
     int i;
-    for (i = 0; i < instArray.size; i++)
+    for (i = 0; i < inst_array.size; i++)
     {
-        if (!strcmp(instArray.str[i], COMMAND))
+        if (!strcmp(inst_array.str[i], COMMAND))
         {
-            *startIndex = i + 1;
+            *start_index = i + 1;
             continue;
         }
 
-        int isSelect = !strcmp(instArray.str[i], SELECT);
-        int isFrom = !strcmp(instArray.str[i], FROM);
-        int isWhere = !strcmp(instArray.str[i], WHERE);
-        if ((isSelect || isFrom || isWhere) && *startIndex != -1)
+        int is_select = !strcmp(inst_array.str[i], SELECT);
+        int is_from = !strcmp(inst_array.str[i], FROM);
+        int is_where = !strcmp(inst_array.str[i], WHERE);
+        if ((is_select || is_from || is_where) && *start_index != -1)
         {
             break;
         }
     }
-    *size = i - *startIndex;
+    *size = i - *start_index;
+}
+
+void freeCommand(Command *instruction){
+    for (int i = 0; i < instruction->from.size; i++){
+        free(instruction->from.str[i]);
+    }
+    free(instruction->from.str);
+
+    for (int i = 0; i < instruction->select_size; i++){
+        free(instruction->select[i].file_name);
+        free(instruction->select[i].key);
+    }
+    free(instruction->select);
+
+    for (int i = 0; i < instruction->where_size; i++){
+        free(instruction->where[i].place->file_name);
+        free(instruction->where[i].place->key);
+        free(instruction->where[i].place);
+    }
+    free(instruction->where);
+
+    free(instruction);
 }

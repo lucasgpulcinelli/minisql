@@ -3,36 +3,36 @@
 
 #include "utils.h"
 typedef struct {
-    char *fileName;
+    char *file_name;
     char *key;
-}member;
+} Member;
 
 typedef struct {
-    member *place;
-    char *comparationValue;
-}condition;
+    Member *place;
+    char *comparation_value;
+} Condition;
 
 typedef struct {
-    stringArray from;
-    condition *where;
-    int whereSize;
-    member *select;
-    int selectSize;
-}command;
+    StringArray from;
+    Condition *where;
+    int where_size;
+    Member *select;
+    int select_size;
+} Command;
 
-stringArray getInstructions();
+StringArray getInstructions(void);
 
-command *generateCommand(stringArray instructionsArray);
+Command *generateCommand(StringArray instructions_array);
 
-member *getSelection(stringArray instArray, int *amount);
+Member *getSelection(StringArray inst_array, int *amount);
 
-condition *getConditions(stringArray instArray, int *amount);
+Condition *getConditions(StringArray inst_array, int *amount);
 
-char** getSourceFiles(stringArray instArray, int *numberOfFiles);
+char** getSourceFiles(StringArray inst_array, int *number_of_files);
 
-void isolateCommand(int *startIndex, int *size, char *begin, stringArray instArray);
+void isolateCommand(int *start_index, int *size, char *begin, StringArray inst_array);
 
 //dealoca um command da memoria
-void freeCommand(command *instruction);
+void freeCommand(Command *instruction);
 
 #endif

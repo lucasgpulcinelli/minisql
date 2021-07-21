@@ -59,25 +59,3 @@ void freeStrArray(StringArray instructionsArray){
 
     free(instructionsArray.str);
 }
-
-void freeCommand(Command *instruction){
-    for (int i = 0; i < instruction->from.size; i++){
-        free(instruction->from.str[i]);
-    }
-    free(instruction->from.str);
-
-    for (int i = 0; i < instruction->selectSize; i++){
-        free(instruction->select[i].fileName);
-        free(instruction->select[i].key);
-    }
-    free(instruction->select);
-
-    for (int i = 0; i < instruction->whereSize; i++){
-        free(instruction->where[i].place->fileName);
-        free(instruction->where[i].place->key);
-        free(instruction->where[i].place);
-    }
-    free(instruction->where);
-
-    free(instruction);
-}
