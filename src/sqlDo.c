@@ -37,10 +37,12 @@ dataframe* processCommand(command* instruction)
     //aloca e seta as chaves do df_out
     for(int i = 0; i < dfs[0]->rows; i++)
     {
-        char** rowvalues;
+        char** rowvalues = malloc(sizeof(char *) * instruction->selectSize);
+        xalloc(rowvalues)
+
         for(int j = 0; j < instruction->selectSize; j++)
         {
-            
+            rowvalues[i] = df_at(dfs[0], i, instruction->select[j].key);
         }
 
         append_df(df_out, rowvalues);
