@@ -33,6 +33,7 @@ stringArray getInstructions()
 command *generateCommand(stringArray instructionsArray)
 {
     command *instruction = malloc(sizeof(command) * 1);
+    xalloc(instruction)
 
     instruction->from.str = getSourceFiles(instructionsArray, &instruction->from.size);
     instruction->where = getConditions(instructionsArray, &instruction->whereSize);
@@ -47,6 +48,7 @@ char **getSourceFiles(stringArray instArray, int *numberOfFiles)
     isolateCommand(&start, numberOfFiles, FROM, instArray);
 
     char **output = malloc(*numberOfFiles * sizeof(char *));
+    xalloc(output)
 
     int i = 0;
     int finalIndex = start + *numberOfFiles;
@@ -54,6 +56,8 @@ char **getSourceFiles(stringArray instArray, int *numberOfFiles)
     {
         int alocSize = strlen(instArray.str[j]);
         output[i] = malloc(sizeof(char) * alocSize + 1);
+        xalloc(output[i])
+
         strcpy(output[i], instArray.str[j]);
 
         removeChar(output[i], ',');
@@ -69,12 +73,15 @@ member *getSelection(stringArray instArray, int *amount)
     isolateCommand(&start, amount, SELECT, instArray);
 
     member *output = malloc(*amount * sizeof(member));
+    xalloc(output)
 
     int i = 0;
     int finalIndex = start + *amount;
     for (int j = start; j < finalIndex; j++)
     {
         char **holder = malloc(sizeof(char *) * 2);
+        xalloc(holder)
+
         removeChar(instArray.str[j], ',');
         separate_character(instArray.str[j], 2, holder, ".");
 
@@ -95,28 +102,29 @@ condition *getConditions(stringArray instArray, int *amount){
 
     if(start < 0){
         *amount = 0;
-        return NULL;}
+        return NULL;
+    }
 
     int finalIndex = start + *amount;
     *amount /= 3;
 
     condition *output = malloc(*amount * sizeof(condition));
+    xalloc(output)
 
     for (int j = start, i = 0; j < finalIndex; j++, i++)
     {
         char **holder = malloc(sizeof(char *) * 2);
+        xalloc(holder)
         separate_character(instArray.str[j], 2, holder, ".");
 
         output[i].place = malloc(sizeof(member));
+        xalloc(output[i].place)
 
         output[i].place->fileName = holder[0];
         output[i].place->key= holder[1];
 
         j += 2; //jumps the = sign
         removeChar(instArray.str[j], ',');
-        /*for(int k = 0; k < strlen(instArray.str[j]); k++){
-            printf("%c\n", instArray.str[j][k]);
-        }*/
         output[i].comparationValue = instArray.str[j];
 
         free(holder);

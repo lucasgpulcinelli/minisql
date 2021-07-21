@@ -5,6 +5,8 @@
 #define FROM "from"
 #define WHERE "where"
 
+#define xalloc(p) if(!p){fprintf(stderr, "ERROR: Allocation failed in line %i\n", __LINE__ - 1); exit(-1);} 
+
 #define DEBUG printf("File: %s - Line: %i\n",__FILE__, __LINE__);
 #define watch(var) printf("%i\n", var)
 #define show(var) printf("%s\n", var)
