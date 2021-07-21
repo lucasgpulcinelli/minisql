@@ -7,15 +7,15 @@
 
 int main(int argc, char** argv)
 {
-    stringArray rawInstructions = getInstructions();
-    command *instruction = generateCommand(rawInstructions);
+    stringArray raw_instructions = getInstructions();
+    command *instruction = generateCommand(raw_instructions);
 
-    dataframe* out_df = processCommand(instruction);
+    DataFrame* out_df = processCommand(instruction);
     
-    write_df(stdout, out_df, 0);
+    writeDf(stdout, out_df, 0);
 
-    delete_df(out_df);
+    deleteDf(out_df);
     freeCommand(instruction);
-    freeStrArray(rawInstructions);
+    freeStrArray(raw_instructions);
     return 0;
 }
