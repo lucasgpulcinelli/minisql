@@ -8,7 +8,8 @@ BUILDD ?= build
 SRCD ?= src
 
 DATABASE   ?= database.zip
-EXECUTABLE ?= $(BUILDD)/sql
+PROGNAME   ?= sql
+EXECUTABLE ?= $(BUILDD)/$(PROGNAME)
 ZIPFILE ?= ../zipfile.zip
 CFILES = $(wildcard $(SRCD)/*.c)
 OFILES = $(patsubst %.c,%.o, $(CFILES))
@@ -33,10 +34,10 @@ prepare_db:
 	$(UNZIP) -u -d $(BUILDD) $(DATABASE)
 
 run: $(EXECUTABLE)
-	./$(EXECUTABLE)
+	cd $(BUILDD) && ./$(PROGNAME)
 
 valgrind: $(EXECUTABLE)
-	valgrind ./$(EXECUTABLE)
+	cd $(BUILDD) && valgrind ./$(PROGNAME)
 
 debug: CFLAGS+=-g 
 debug: clean
