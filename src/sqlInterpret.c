@@ -80,8 +80,6 @@ Member *getSelection(StringArray inst_array, int *amount){
         output[i].key = holder[1];
 
         free(holder);
-
-        i++;
     }
 
     return output;
