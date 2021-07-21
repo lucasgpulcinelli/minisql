@@ -16,9 +16,7 @@ stringArray getInstructions()
     int allocationSize = strlen(rawInstructions);
 
     rawInstructions = realloc(rawInstructions, sizeof(char) * allocationSize + 1);
-
-    show(rawInstructions);
-
+    
     stringArray instArray;
     instArray.size = get_ncols(rawInstructions, ' ');
     
