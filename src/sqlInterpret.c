@@ -27,8 +27,7 @@ StringArray getInstructions(void){
     return inst_array;
 }
 
-Command *generateCommand(StringArray instructions_array)
-{
+Command *generateCommand(StringArray instructions_array){
     Command *instruction = malloc(sizeof(Command) * 1);
     xalloc(instruction)
 
@@ -39,8 +38,7 @@ Command *generateCommand(StringArray instructions_array)
     return instruction;
 }
 
-char **getSourceFiles(StringArray inst_array, int *number_of_files)
-{
+char **getSourceFiles(StringArray inst_array, int *number_of_files){
     int start;
     isolateCommand(&start, number_of_files, FROM, inst_array);
 
@@ -49,8 +47,7 @@ char **getSourceFiles(StringArray inst_array, int *number_of_files)
 
     int i = 0;
     int final_index = start + *number_of_files;
-    for (int j = start; j < final_index; j++)
-    {
+    for (int j = start; j < final_index; j++){
         int aloc_size = strlen(inst_array.str[j]);
         output[i] = malloc(sizeof(char) * aloc_size + 1);
         xalloc(output[i])
@@ -64,8 +61,7 @@ char **getSourceFiles(StringArray inst_array, int *number_of_files)
     return output;
 }
 
-Member *getSelection(StringArray inst_array, int *amount)
-{
+Member *getSelection(StringArray inst_array, int *amount){
     int start;
     isolateCommand(&start, amount, SELECT, inst_array);
 
@@ -73,8 +69,7 @@ Member *getSelection(StringArray inst_array, int *amount)
     xalloc(output)
 
     int final_index = start + *amount;
-    for (int i = 0, j = start; j < final_index; i++, j++)
-    {
+    for (int i = 0, j = start; j < final_index; i++, j++){
         char **holder = malloc(sizeof(char *) * 2);
         xalloc(holder)
 
@@ -107,8 +102,7 @@ Condition *getConditions(StringArray inst_array, int *amount){
     Condition *output = malloc(*amount * sizeof(Condition));
     xalloc(output)
 
-    for (int j = start, i = 0; j < final_index; j++, i++)
-    {
+    for (int j = start, i = 0; j < final_index; j++, i++){
         char **holder = malloc(sizeof(char *) * 2);
         xalloc(holder)
         separateCharacter(inst_array.str[j], 2, holder, ".");
@@ -129,14 +123,11 @@ Condition *getConditions(StringArray inst_array, int *amount){
     return output;
 }
 
-void isolateCommand(int *start_index, int *size, char *COMMAND, StringArray inst_array)
-{
+void isolateCommand(int *start_index, int *size, char *COMMAND, StringArray inst_array){
     *start_index = -1;
     int i;
-    for (i = 0; i < inst_array.size; i++)
-    {
-        if (!strcmp(inst_array.str[i], COMMAND))
-        {
+    for (i = 0; i < inst_array.size; i++){
+        if (!strcmp(inst_array.str[i], COMMAND)){
             *start_index = i + 1;
             continue;
         }
@@ -144,8 +135,7 @@ void isolateCommand(int *start_index, int *size, char *COMMAND, StringArray inst
         int is_select = !strcmp(inst_array.str[i], SELECT);
         int is_from = !strcmp(inst_array.str[i], FROM);
         int is_where = !strcmp(inst_array.str[i], WHERE);
-        if ((is_select || is_from || is_where) && *start_index != -1)
-        {
+        if ((is_select || is_from || is_where) && *start_index != -1){
             break;
         }
     }
