@@ -66,10 +66,22 @@ DataFrame* processCommand(Command* instruction){
             rowvalues[j] = dfAt(dfs[0], i, instruction->select[j].key);
         }
 
-        appendDf(df_out, rowvalues);
+        if(instruction->where_size > 0){ //testa se o comando where foi passado
+            if(rowShould(instruction->where, dfs, i)) //descobre se aquela row deve ser adicionada
+                appendDf(df_out, rowvalues);
+        }else{
+            appendDf(df_out, rowvalues);
+        }
     }
 
     free(rowvalues);
     deleteManyDfs(dfs, instruction->from.size);
     return df_out;
+}
+
+int rowShould(Condition *where, DataFrame **dfs, int index){
+    char *holder = dfAt(dfs[0], index, where->place->key); //pega o que está na coluna linha para ser comparado
+    if(!strcmp(holder, where->comparation_value)) //compara os valores para analisar se aquela linha deve ser incluida
+        return 1;
+    return 0;
 }
