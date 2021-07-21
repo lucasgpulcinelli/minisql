@@ -16,7 +16,7 @@ OFILES = $(patsubst %.c,%.o, $(CFILES))
 CFLAGS += -Wall
 
 
-.PHONY: all clean zip run prepare_db valgrind
+.PHONY: all clean zip run prepare_db valgrind debug
 
 all: $(EXECUTABLE)
 
@@ -37,6 +37,11 @@ run: $(EXECUTABLE)
 
 valgrind: $(EXECUTABLE)
 	valgrind ./$(EXECUTABLE)
+
+debug: CFLAGS+=-g 
+debug: clean
+debug: $(EXECUTABLE)
+
 
 $(EXECUTABLE): $(OFILES)
 	@$(MKDIR) $(BUILDD)
