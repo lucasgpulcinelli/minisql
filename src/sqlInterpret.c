@@ -116,6 +116,8 @@ Condition *getConditions(StringArray inst_array, int *amount){
         j += 2; //jumps the = sign
         removeChar(inst_array.str[j], ',');
         output[i].comparation_value = inst_array.str[j];
+        removeChar(output[i].comparation_value, '\"');
+        removeChar(output[i].comparation_value, '\n');
 
         free(holder);
     }

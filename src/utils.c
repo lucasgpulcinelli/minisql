@@ -4,6 +4,8 @@
 #include "utils.h"
 #include "sqlInterpret.h"
 
+void removeAt(char *str, int index);
+
 int separateCharacter(char* line_buffer, unsigned int cols, char** dest, char* delim){
     int got_null = 0;
     int i;
@@ -44,11 +46,12 @@ void removeChar(char *str, char remove){
     int string_size = strlen(str);
 
     for(int k = 0; k < string_size; k++){
-        if (str[k] == remove){
-            str[k] = '\0';
-            string_size--;
-            break;
-        }
+            if (str[k] == remove)
+            {
+                //str[k] = '\0';
+                removeAt(str, k);
+                string_size--;
+            }
     }
 }
 
@@ -58,4 +61,17 @@ void freeStrArray(StringArray instructionsArray){
     }
 
     free(instructionsArray.str);
+}
+
+void removeAt(char *str, int index){
+    int stringSize = strlen(str);
+    int amountOfPositionsToChange = (stringSize-index)-1; //quantas posições precisam ser mudadas no novo array, menos a ultima que será vazia
+
+    for (int i = 0; i < amountOfPositionsToChange; i++)
+    {
+        str[index] = str[index+1]; //passa o valor da direita para a esquerda
+        index++; //vai para o proximo valor
+    }
+    stringSize--; //diminui o tamanho do array
+    str[stringSize] = '\0';
 }
