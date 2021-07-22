@@ -13,7 +13,7 @@ DataFrame* processCommand(Command* instruction){
         return NULL;
     }
     
-    //aloca as chaves
+    //aloca e seta as chaves
     char** out_keys = malloc(sizeof(char*) * instruction->select_size);
     if(out_keys == NULL){
         deleteManyDfs(dfs, instruction->from.size);
@@ -48,40 +48,36 @@ DataFrame* processCommand(Command* instruction){
         }
         free(out_keys);
         deleteManyDfs(dfs, instruction->from.size);
+        return NULL;
     }
 
 
-    char** rowvalues = malloc(sizeof(char *) * instruction->select_size);
-    if(rowvalues == NULL){
+    char** row_values = malloc(sizeof(char *) * instruction->select_size);
+    if(row_values == NULL){
         deleteDf(df_out);
         deleteManyDfs(dfs, instruction->from.size);
         return NULL;
     }
 
-    //aloca e seta as chaves do df_out
-    for(int i = 0; i < dfs[0]->rows; i++)
-    {
-        for(int j = 0; j < instruction->select_size; j++)
-        {
-            rowvalues[j] = dfAt(dfs[0], i, instruction->select[j].key);
+    //coloca os valores de df_out
+    for(int i = 0; i < dfs[0]->rows; i++){
+        //caso o where tenha sido passado e ele indique que a row nao deve ser colocada pula essa row
+        if(instruction->where_size > 0 && !rowShould(instruction->where, dfs, i)){
+            continue;    
         }
 
-        if(instruction->where_size > 0){ //testa se o comando where foi passado
-            if(rowShould(instruction->where, dfs, i)) //descobre se aquela row deve ser adicionada
-                appendDf(df_out, rowvalues);
-        }else{
-            appendDf(df_out, rowvalues);
+        for(int j = 0; j < instruction->select_size; j++){
+            row_values[j] = dfAt(dfs[0], i, instruction->select[j].key);
         }
+        appendDf(df_out, row_values);
     }
 
-    free(rowvalues);
+    free(row_values);
     deleteManyDfs(dfs, instruction->from.size);
     return df_out;
 }
 
 int rowShould(Condition *where, DataFrame **dfs, int index){
     char *holder = dfAt(dfs[0], index, where->place->key); //pega o que está na coluna linha para ser comparado
-    if(!strcmp(holder, where->comparation_value)) //compara os valores para analisar se aquela linha deve ser incluida
-        return 1;
-    return 0;
+    return strcmp(holder, where->comparation_value) == 0; //compara os valores para analisar se aquela linha deve ser incluida
 }
