@@ -93,7 +93,6 @@ void writeTsvRow(FILE* fptr, char** values, unsigned int size){
     fprintf(fptr, "%s\n", values[size-1]);
 }
 
-
 DataFrame* createDf(char** keys, unsigned int cols){
     DataFrame* df = malloc(sizeof(DataFrame));
     if(df == NULL){
@@ -339,4 +338,12 @@ void deleteDf(DataFrame* df){
 
     free(df);
     return;
+}
+
+int getDfIndex(DataFrame **dfs, char *name, int dfs_size){
+    for(int i = 0; i < dfs_size; i++){
+        if(!strcmp(dfs[i]->name, name))
+            return i;
+    }
+    return -1;
 }
