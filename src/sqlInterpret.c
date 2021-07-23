@@ -112,10 +112,11 @@ Condition *getConditions(StringArray inst_array, int *amount){
         output[i].place->key= holder[1];
 
         j += 2; //jumps the = sign
+        //cleans the comparation value from ','; '\"' and '\n'
         removeChar(inst_array.str[j], ',');
+        removeChar(inst_array.str[j], '\"');
+        removeChar(inst_array.str[j], '\n');
         output[i].comparation_value = inst_array.str[j];
-        removeChar(output[i].comparation_value, '\"');
-        removeChar(output[i].comparation_value, '\n');
 
         free(holder);
     }
