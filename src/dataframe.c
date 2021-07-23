@@ -5,6 +5,7 @@
 
 #include "dataframe.h"
 #include "utils.h"
+#include "sqlInterpret.h"
 
 #define INIT_ROWS_MAXSIZE  32
 #define FGETS_MAXLEN      256
@@ -280,7 +281,39 @@ char* dfAt(DataFrame* df, unsigned int row, char* key){
     return NULL;
 }
 
-void writeDf(FILE* fptr, DataFrame* df, int with_header){
+int findKeyCol(char *key_to_find, char **key_set, int ket_set_size){
+    for(int i = 0; i < ket_set_size; i++){
+        if(!strcmp(key_set[i], key_to_find)){
+            return i;
+        }
+    }
+    return -1;
+}
+
+int rowShould(Command *instruction, char **keys, int amount_keys, char **values){
+    if(instruction->where_size <= 0)
+        return 1;
+    
+    if(!stringHasChar(instruction->where->comparation_value, '.')){
+        int val_index = findKeyCol(instruction->where->place->key, keys, amount_keys);
+        char *val = values[val_index]; //pega o que está na coluna linha para ser comparado
+        return strcmp(val, instruction->where->comparation_value) == 0; //compara os valores para analisar se aquela linha deve ser incluida
+    }else{
+        int val1_index = findKeyCol(instruction->where->place->key, keys, amount_keys);
+        char *val1 = values[val1_index]; //pega o que está na coluna linha para ser comparado
+
+        char **holder = malloc(sizeof(char *) * 2);
+        xalloc(holder)
+        separateCharacter(instruction->where->comparation_value, 2, holder, ".");
+
+        int val2_index = findKeyCol(holder[1], keys, amount_keys);
+        free(holder);
+        char *val2 = values[val2_index]; //pega o que está na coluna linha para ser comparado
+        return strcmp(val1, val2) == 0; //compara os valores para analisar se aquela linha deve ser incluida
+    }
+}
+
+void writeDf(FILE* fptr, DataFrame* df, int with_header, Command *instruction){
 
     if(df == NULL){
         fprintf(stderr, "Erro, call para write_df foi chamado com df NULL\n");
@@ -294,7 +327,8 @@ void writeDf(FILE* fptr, DataFrame* df, int with_header){
     }
 
     for(int i = 0; i < df->rows; i++){
-       writeTsvRow(fptr, df->values[i], df->cols);
+        if(rowShould(instruction, df->keys, df->cols, df->values[i]))
+            writeTsvRow(fptr, df->values[i], instruction->select_size);
     }
 }
 

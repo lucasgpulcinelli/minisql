@@ -31,6 +31,27 @@ Command *generateCommand(StringArray instructions_array){
     Command *instruction = malloc(sizeof(Command) * 1);
     xalloc(instruction)
 
+    instruction->sources = malloc(sizeof(Member) * instructions_array.size);
+    instruction->sources_size = 0;
+    for (int i = 0; i < instructions_array.size; i++){
+        if(stringHasChar(instructions_array.str[i], '.')){
+            char **holder = malloc(sizeof(char *) * 2);
+            xalloc(holder)
+
+            char *arrayHolder = malloc(strlen(instructions_array.str[i]) + 1);
+            strcpy(arrayHolder,instructions_array.str[i]);
+            removeChar(arrayHolder, ',');
+            separateCharacter(arrayHolder, 2, holder, ".");
+
+            instruction->sources[instruction->sources_size].file_name = holder[0];
+            instruction->sources[instruction->sources_size].key = holder[1];
+
+            instruction->sources_size++;
+            free(holder);
+        }
+    }
+    instruction->sources = realloc(instruction->sources, sizeof(Member) * instruction->sources_size);
+
     instruction->from.str = getSourceFiles(instructions_array, &instruction->from.size);
     instruction->where = getConditions(instructions_array, &instruction->where_size);
     instruction->select = getSelection(instructions_array, &instruction->select_size);

@@ -8,8 +8,8 @@
 //descobre quantas colunas do DataFrame df estao no comando instruction
 int selectColsInDf(Command* instruction, DataFrame* df){
     int out_cols = 0;
-    for(int i = 0; i < instruction->select_size; i++){
-        if(strcmp(instruction->select[i].file_name, df->name) == 0){
+    for(int i = 0; i < instruction->sources_size; i++){
+        if(strcmp(instruction->sources[i].file_name, df->name) == 0){
             out_cols++;
         }
     }
@@ -29,7 +29,6 @@ DataFrame* processCommand(Command* instruction){
     //ve quantas chaves do primeiro arquivo tem no select
     int out_cols = selectColsInDf(instruction, dfs[0]);
 
-
     //aloca e seta as chaves
     char** out_keys = malloc(sizeof(char*) * out_cols);
     if(out_keys == NULL){
@@ -43,17 +42,17 @@ DataFrame* processCommand(Command* instruction){
     for(i = 0, j = 0; i < out_cols; i++, j++){
         //ve qual coluna do dfs[0] que tem nome igual a um membro do select
         //(nao roda para sempre pois nesse caso ele ja teria saido do loop)
-        while(strcmp(instruction->select[j].file_name, dfs[0]->name) != 0){
+        while(strcmp(instruction->sources[j].file_name, dfs[0]->name) != 0){
             j++;
         }
 
-        out_keys[i] = malloc(sizeof(char) * (strlen(instruction->select[j].key) + 1));
+        out_keys[i] = malloc(sizeof(char) * (strlen(instruction->sources[j].key) + 1));
         if(out_keys[i] == NULL){
             got_null = 1;
             break;
         }
 
-        strcpy(out_keys[i], instruction->select[j].key);
+        strcpy(out_keys[i], instruction->sources[j].key);
     }
 
     if(got_null){
@@ -76,6 +75,10 @@ DataFrame* processCommand(Command* instruction){
         return NULL;
     }
 
+    for(int i = 0; i < instruction->sources_size; i++){
+        printf("%s ", instruction->sources[i].key);
+    }
+    printf("\n");
 
     char** row_values = malloc(sizeof(char *) * out_cols);
     if(row_values == NULL){
@@ -87,10 +90,6 @@ DataFrame* processCommand(Command* instruction){
     //coloca os valores de df_out
     for(int i = 0; i < dfs[0]->rows; i++){
         //caso o where tenha sido passado e ele indique que a row nao deve ser colocada pula essa row
-        if(instruction->where_size > 0 && !rowShould(instruction->where, dfs, i)){
-            continue;    
-        }
-
         for(int j = 0; j < df_out->cols; j++){
             for(int k = 0; k < dfs[0]->cols; k++){
 
@@ -122,17 +121,17 @@ DataFrame* processCommand(Command* instruction){
 
         //para cada coluna, seta a chave na sequencia do select
         int key_to_copy = 0;
-        for(int j = 0; j < instruction->select_size; j++){
+        for(int j = 0; j < instruction->sources_size; j++){
             int use_key = 0;
             for(int k = 0; k <= i; k++){
-                if(strcmp(instruction->select[j].file_name, dfs[k]->name) == 0){
+                if(strcmp(instruction->sources[j].file_name, dfs[k]->name) == 0){
                     use_key = 1;
                     break;
                 }
             }
             if(use_key){
-                out_keys[key_to_copy] = malloc(sizeof(char) * (strlen(instruction->select[j].key)+1));
-                strcpy(out_keys[key_to_copy], instruction->select[j].key);
+                out_keys[key_to_copy] = malloc(sizeof(char) * (strlen(instruction->sources[j].key)+1));
+                strcpy(out_keys[key_to_copy], instruction->sources[j].key);
                 key_to_copy++;
             }
         }
@@ -152,17 +151,6 @@ DataFrame* processCommand(Command* instruction){
         //para cada possivel combinacao de rows:
         for(int j = 0; j < dfs[i]->rows; j++){
             for(int k = 0; k < df_out->rows; k++){
-                //caso o where tenha sido passado e ele indique que a row nao deve ser colocada pula essa combinacao
-                if(instruction->where_size > 0 && !rowShould(instruction->where, dfs, i)){
-                    //continue;    
-                }
-                
-                //select Progs.Programa, Trabalhos.Idioma, Docentes.Nome from Progs, Docentes, Trabalhos
-
-                //df_out -> Programa, Nome
-                //new_df_out -> Programa, Idioma, Nome
-                //dfs[i] = Trabalhos
-
                 for(int m = 0; m < new_df_out->cols; m++){
                     char* value_to_copy = dfAt(df_out, k, new_df_out->keys[m]);
                     
@@ -179,7 +167,6 @@ DataFrame* processCommand(Command* instruction){
                     }
                 }
 
-
                 appendDf(new_df_out, row_values);
             }
         }
@@ -195,7 +182,7 @@ DataFrame* processCommand(Command* instruction){
     return df_out;
 }
 
-int rowShould(Condition *where, DataFrame **dfs, int index){
+/*int rowShould(Condition *where, DataFrame **dfs, int index){
     char *holder = dfAt(dfs[0], index, where->place->key); //pega o que está na coluna linha para ser comparado
     return strcmp(holder, where->comparation_value) == 0; //compara os valores para analisar se aquela linha deve ser incluida
-}
+}*/

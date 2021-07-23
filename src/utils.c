@@ -75,3 +75,14 @@ void removeAt(char *str, int index){
     stringSize--; //diminui o tamanho do array
     str[stringSize] = '\0';
 }
+
+int stringHasChar(const char *str, char goal){
+    int str_size = strlen(str);
+
+    for(int i = 0; i < str_size; i++){
+        if(str[i] == goal){
+            return 1;
+        }
+    }
+    return 0;
+}

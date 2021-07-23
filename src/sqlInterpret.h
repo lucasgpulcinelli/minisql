@@ -18,6 +18,8 @@ typedef struct {
     int where_size;
     Member *select;
     int select_size;
+    Member *sources;
+    int sources_size;
 } Command;
 
 StringArray getInstructions(void);

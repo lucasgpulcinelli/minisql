@@ -2,6 +2,7 @@
 #define __DATAFRAME_H__
 
 #include <stdio.h>
+#include "sqlInterpret.h"
 
 /*
 membros:
@@ -38,7 +39,7 @@ int appendDf(DataFrame* df, char** value);
 char* dfAt(DataFrame* df, unsigned int row, char* key);
 
 //coloca em fptr as informacoes do dataframe df, com o sem o header
-void writeDf(FILE* fptr, DataFrame* df, int with_header);
+void writeDf(FILE* fptr, DataFrame* df, int with_header, Command *instruction);
 
 //deleta dataframes
 void deleteManyDfs(DataFrame** dflist, unsigned int size);
