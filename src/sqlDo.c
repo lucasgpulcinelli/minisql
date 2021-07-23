@@ -23,12 +23,16 @@ DataFrame* processCommand(Command* instruction){
     int got_null = 0;
     int i;
     for(i = 0; i < instruction->select_size; i++){
-        out_keys[i] = malloc(sizeof(char) * (strlen(instruction->select[i].key) + 1));
+        int out_size = strlen(instruction->select[i].file_name) + strlen(instruction->select[i].key) + 2;
+        out_keys[i] = malloc(sizeof(char) * out_size);
         if(out_keys[i] == NULL){
             got_null = 1;
             break;
         }
-        strcpy(out_keys[i], instruction->select[i].key);
+
+        strcpy(out_keys[i], instruction->select[i].file_name);
+        strcat(out_keys[i], ".");
+        strcat(out_keys[i], instruction->select[i].key);
     }
 
     if(got_null){
@@ -62,7 +66,7 @@ DataFrame* processCommand(Command* instruction){
     //coloca os valores de df_out
     for(int i = 0; i < dfs[0]->rows; i++){
         //caso o where tenha sido passado e ele indique que a row nao deve ser colocada pula essa row
-        if(instruction->where_size > 0 && !rowShould(instruction->where, dfs, i)){
+        if(instruction->where_size > 0 && !rowShould(instruction, dfs, i)){
             continue;    
         }
 
@@ -77,7 +81,21 @@ DataFrame* processCommand(Command* instruction){
     return df_out;
 }
 
-int rowShould(Condition *where, DataFrame **dfs, int index){
-    char *holder = dfAt(dfs[0], index, where->place->key); //pega o que está na coluna linha para ser comparado
-    return strcmp(holder, where->comparation_value) == 0; //compara os valores para analisar se aquela linha deve ser incluida
+int rowShould(Command *instruction, DataFrame **dfs, int index){
+    //Progs.Programa = Docentes.CodigodoPPG
+    if(stringHasChar(instruction->where->comparation_value, '.')){
+        char *holder = dfAt(dfs[0], index, instruction->where->place->key); //pega o que está na coluna linha para ser comparado
+        return strcmp(holder, instruction->where->comparation_value) == 0; //compara os valores para analisar se aquela linha deve ser incluida
+    }else{
+        char *source = strtok(instruction->where->place->key, ".");
+        int dataframe_index = getDfIndex(dfs, source, instruction->from.size);
+        char *holder = dfAt(dfs[0], index, instruction->where->place->key); //pega o que está na coluna linha para ser comparado
+
+        for(int i = 0; i < dfs[dataframe_index]->rows; i++){
+            char *comparation_val = dfAt(dfs[dataframe_index], i, instruction->where->place->key);
+            if(strcmp(holder, comparation_val) == 0)
+                return 0;
+        }
+        return 1;
+    }
 }
