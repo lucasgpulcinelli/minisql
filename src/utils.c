@@ -48,7 +48,6 @@ void removeChar(char *str, char remove){
     for(int k = 0; k < string_size; k++){
             if (str[k] == remove)
             {
-                //str[k] = '\0';
                 removeAt(str, k);
                 string_size--;
             }
@@ -74,4 +73,15 @@ void removeAt(char *str, int index){
     }
     stringSize--; //diminui o tamanho do array
     str[stringSize] = '\0';
+}
+
+int stringHasChar(const char *str, char goal){
+    int str_size = strlen(str);
+
+    for(int i = 0; i < str_size; i++){
+        if(str[0] == goal){
+            return 0;
+        }
+    }
+    return 1;
 }
