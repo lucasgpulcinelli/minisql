@@ -79,9 +79,9 @@ int stringHasChar(const char *str, char goal){
     int str_size = strlen(str);
 
     for(int i = 0; i < str_size; i++){
-        if(str[0] == goal){
-            return 0;
+        if(str[i] == goal){
+            return 1;
         }
     }
-    return 1;
+    return 0;
 }
