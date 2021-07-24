@@ -86,3 +86,12 @@ int stringHasChar(const char *str, char goal){
     }
     return 0;
 }
+
+int ocurrencesInArray(StringArray arr, const char *val){
+    int counter = 0;
+    for(int i = 0; i < arr.size; i++){
+        if(!strcmp(arr.str[i], val))
+            counter++;
+    }
+    return counter;
+}

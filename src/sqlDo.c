@@ -75,11 +75,6 @@ DataFrame* processCommand(Command* instruction){
         return NULL;
     }
 
-    for(int i = 0; i < instruction->sources_size; i++){
-        printf("%s ", instruction->sources[i].key);
-    }
-    printf("\n");
-
     char** row_values = malloc(sizeof(char *) * out_cols);
     if(row_values == NULL){
         deleteDf(df_out);

@@ -34,4 +34,6 @@ void freeStrArray(StringArray instructionsArray);
 //encontra a posição de um char em uma string, se esse char não estiver lá retorna 1
 int stringHasChar(const char *str, char goal);
 
+int ocurrencesInArray(StringArray arr, const char *val);
+
 #endif

@@ -24,6 +24,10 @@ StringArray getInstructions(void){
 
     free(raw_instructions);
 
+    for(int i = 0; i < inst_array.size; i++){
+        removeChar(inst_array.str[i], '\n');
+    }
+
     return inst_array;
 }
 
@@ -47,6 +51,7 @@ Command *generateCommand(StringArray instructions_array){
             instruction->sources[instruction->sources_size].key = holder[1];
 
             instruction->sources_size++;
+            free(arrayHolder);
             free(holder);
         }
     }
@@ -114,8 +119,9 @@ Condition *getConditions(StringArray inst_array, int *amount){
         *amount = 0;
         return NULL;
     }
-
     int final_index = start + *amount;
+    int amount_ands = ocurrencesInArray(inst_array, "and");
+    *amount -= amount_ands;
     *amount /= 3;
 
     Condition *output = malloc(*amount * sizeof(Condition));
@@ -138,6 +144,7 @@ Condition *getConditions(StringArray inst_array, int *amount){
         removeChar(output[i].comparation_value, '\"');
         removeChar(output[i].comparation_value, '\n');
 
+        j++; //jumps the 'and'
         free(holder);
     }
 
@@ -168,6 +175,12 @@ void freeCommand(Command *instruction){
         free(instruction->from.str[i]);
     }
     free(instruction->from.str);
+
+    for (int i = 0; i < instruction->sources_size; i++){
+        free(instruction->sources[i].file_name);
+        free(instruction->sources[i].key);
+    }
+    free(instruction->sources);
 
     for (int i = 0; i < instruction->select_size; i++){
         free(instruction->select[i].file_name);

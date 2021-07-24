@@ -290,26 +290,31 @@ int findKeyCol(char *key_to_find, char **key_set, int ket_set_size){
     return -1;
 }
 
-int rowShould(Command *instruction, char **keys, int amount_keys, char **values){
-    if(instruction->where_size <= 0)
-        return 1;
-    
-    if(!stringHasChar(instruction->where->comparation_value, '.')){
-        int val_index = findKeyCol(instruction->where->place->key, keys, amount_keys);
+int rowShould(Condition where, char **keys, int amount_keys, char **values){
+    if(!stringHasChar(where.comparation_value, '.')){
+        int val_index = findKeyCol(where.place->key, keys, amount_keys);
         char *val = values[val_index]; //pega o que está na coluna linha para ser comparado
-        return strcmp(val, instruction->where->comparation_value) == 0; //compara os valores para analisar se aquela linha deve ser incluida
+        return strcmp(val, where.comparation_value); //compara os valores para analisar se aquela linha deve ser incluida
     }else{
-        int val1_index = findKeyCol(instruction->where->place->key, keys, amount_keys);
+        int val1_index = findKeyCol(where.place->key, keys, amount_keys);
         char *val1 = values[val1_index]; //pega o que está na coluna linha para ser comparado
 
         char **holder = malloc(sizeof(char *) * 2);
         xalloc(holder)
-        separateCharacter(instruction->where->comparation_value, 2, holder, ".");
 
+        int temp_size = strlen(where.comparation_value) + 1;
+        char *temp = malloc(sizeof(char) * temp_size);
+        strcpy(temp, where.comparation_value);
+        separateCharacter(temp, 2, holder, ".");
+        free(temp);
         int val2_index = findKeyCol(holder[1], keys, amount_keys);
+
+        free(holder[0]);
+        free(holder[1]);
         free(holder);
         char *val2 = values[val2_index]; //pega o que está na coluna linha para ser comparado
-        return strcmp(val1, val2) == 0; //compara os valores para analisar se aquela linha deve ser incluida
+
+        return strcmp(val1, val2); //compara os valores para analisar se aquela linha deve ser incluida
     }
 }
 
@@ -327,7 +332,23 @@ void writeDf(FILE* fptr, DataFrame* df, int with_header, Command *instruction){
     }
 
     for(int i = 0; i < df->rows; i++){
-        if(rowShould(instruction, df->keys, df->cols, df->values[i]))
+        //printf("This should be a row: %i ", i);
+        if (instruction->where_size <= 0){
+            writeTsvRow(fptr, df->values[i], instruction->select_size);
+            continue;
+        }
+        if(i == 59064){
+            printf("hi");
+        }
+
+        int meetsConditions = 0;
+        for (int j = 0; j < instruction->where_size; j++){
+            if(rowShould(instruction->where[j], df->keys, df->cols, df->values[i])){
+                meetsConditions = 1;
+                break;
+            }
+        }
+        if(meetsConditions == 0)
             writeTsvRow(fptr, df->values[i], instruction->select_size);
     }
 }
