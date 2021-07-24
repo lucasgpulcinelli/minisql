@@ -20,7 +20,7 @@ typedef struct{
 //pega uma linha separada por delim com cols valores e retorna esses valores separados em dest
 //aloca apenas os membros de dest (dest[0] ate dest[cols-1]), mas nao dest em si
 //retorna != 0 em caso de erro 
-int separateCharacter(char* line_buffer, unsigned int cols, char** dest, char* delim);
+int separateCharacter(const char* line_buffer, unsigned int cols, char** dest, char* delim);
 
 //descobre o numero de colunas em uma string com delimitador delim
 unsigned int getNcols(char *string, char delimiter);

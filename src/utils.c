@@ -6,12 +6,15 @@
 
 void removeAt(char *str, int index);
 
-int separateCharacter(char* line_buffer, unsigned int cols, char** dest, char* delim){
+int separateCharacter(const char* line_buffer, unsigned int cols, char** dest, char* delim){
     int got_null = 0;
     int i;
-    
+
+    char *str = malloc(strlen(line_buffer) + 1);
+    strcpy(str,line_buffer);    
+
     //cada call de strtok retorna o membro terminando com \0
-    char* member = strtok(line_buffer, delim);
+    char* member = strtok(str, delim);
 
     for(i = 0; i < cols; i++, member = strtok(NULL, delim)){
 

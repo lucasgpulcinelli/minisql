@@ -94,6 +94,7 @@ Condition *getConditions(StringArray inst_array, int *amount){
     int start;
     isolateCommand(&start, amount, WHERE, inst_array);
 
+    //se o start for menor que 0 isso qr dizer q não tem WHERE
     if(start < 0){
         *amount = 0;
         return NULL;
@@ -101,7 +102,7 @@ Condition *getConditions(StringArray inst_array, int *amount){
 
     int final_index = start + *amount;
     *amount /= 4; //todo o comando tem uma string, um igual, outra string e um "and" ou "or"
-    *amount += 1; //exceto o ultimo que nao teo o "and" ou "or"
+    *amount += 1; //exceto o ultimo que nao tem o "and" ou "or"
 
     Condition *output = malloc(*amount * sizeof(Condition));
     xalloc(output)
