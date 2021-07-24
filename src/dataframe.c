@@ -129,7 +129,7 @@ DataFrame* readDf(char* filename){
     //pega a linha do header
     char line_buffer[FGETS_MAXLEN];
     if(fgets(line_buffer, FGETS_MAXLEN, fptr) == NULL){
-        errno = EBADFD;
+        errno = EINVAL;
         abortProgram("File %s header ", tsvfilename);
     }
     line_buffer[strlen(line_buffer)-1] = '\0';
