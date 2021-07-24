@@ -137,10 +137,6 @@ DataFrame* readDf(char* filename){
     //cria as keys
     char** keys;
     int cols = readHeader(line_buffer, &keys);
-    if(cols < 0){
-        errno = EINVAL;
-        abortProgram("File %s header ", tsvfilename);
-    }
     
     //cria um df com essas keys
     DataFrame* df = createDf(keys, cols);
