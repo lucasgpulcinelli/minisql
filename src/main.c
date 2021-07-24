@@ -12,7 +12,7 @@ int main(int argc, char** argv)
 
     DataFrame* out_df = processCommand(instruction);
     
-    writeDf(stdout, out_df, 0);
+    writeDf(stdout, out_df);
 
     deleteDf(out_df);
     freeCommand(instruction);

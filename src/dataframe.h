@@ -37,8 +37,8 @@ int appendDf(DataFrame* df, char** value);
 //pega o valor de df com linha row e coluna key
 char* dfAt(DataFrame* df, unsigned int row, char* key);
 
-//coloca em fptr as informacoes do dataframe df, com o sem o header
-void writeDf(FILE* fptr, DataFrame* df, int with_header);
+//coloca em fptr as informacoes do dataframe df
+void writeDf(FILE* fptr, DataFrame* df);
 
 //deleta dataframes
 void deleteManyDfs(DataFrame** dflist, unsigned int size);

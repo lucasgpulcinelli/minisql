@@ -280,18 +280,13 @@ char* dfAt(DataFrame* df, unsigned int row, char* key){
     return NULL;
 }
 
-void writeDf(FILE* fptr, DataFrame* df, int with_header){
+void writeDf(FILE* fptr, DataFrame* df){
 
     if(df == NULL){
         fprintf(stderr, "Erro, call para write_df foi chamado com df NULL\n");
         return;
     }
 
-    //no runcodes nao se pode colocar o header,
-    //mas e tao facil e faz tanto sentido que eu preferi adicionar a opcao
-    if(with_header){
-        writeTsvRow(fptr, df->keys, df->cols);
-    }
 
     for(int i = 0; i < df->rows; i++){
        writeTsvRow(fptr, df->values[i], df->cols);
