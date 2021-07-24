@@ -81,12 +81,3 @@ void removeAt(char *str, int index){
     stringSize--; //diminui o tamanho do array
     str[stringSize] = '\0';
 }
-
-void strrealloc(char *str){
-    char *copy = malloc(strlen(str) + 1);
-    strcpy(copy,str);
-
-    int size = strlen(str) + 1;
-    str = realloc(copy, size);
-    xalloc(str);
-}

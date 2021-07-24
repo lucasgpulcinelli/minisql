@@ -8,6 +8,11 @@
 
 #define SIZE 1024
 
+/*
+SQL Interpret é responsável por interpretar o comando passado pelo usuário
+É aqui que a struct de comandos, que separa os três diferentes tipos de  instrução, é preenchida
+*/
+
 StringArray getInstructions(void){
     char *raw_instructions = malloc(sizeof(char) * SIZE);
     fgets(raw_instructions, SIZE, stdin);
@@ -62,16 +67,16 @@ char **getSourceFiles(StringArray inst_array, int *number_of_files){
     return output;
 }
 
-Member *getSelection(StringArray inst_array, int *amount){
+Field *getSelection(StringArray inst_array, int *amount){
     int start;
     isolateCommand(&start, amount, SELECT, inst_array);
 
-    Member *output = malloc(*amount * sizeof(Member));
+    Field *output = malloc(*amount * sizeof(Field));
     xalloc(output)
 
     int final_index = start + *amount;
     for (int i = 0, j = start; j < final_index; i++, j++){
-        Member *holder = createMemberFromFull(inst_array.str[j]); //utiliza um holder pois output[i] não é um pointer
+        Field *holder = createMemberFromFull(inst_array.str[j]); //utiliza um holder pois output[i] não é um pointer
         xalloc(holder);
 
         output[i] = *holder;
@@ -99,17 +104,17 @@ Condition *getConditions(StringArray inst_array, int *amount){
     xalloc(output)
 
     for (int j = start, i = 0; j < final_index; j++, i++){
-        output[i].place = createMemberFromFull(inst_array.str[j]);
+        output[i].first_member_term = createMemberFromFull(inst_array.str[j]);
 
         j += 2; //pula o "=" e vai para o proximo  
         
         if(strchr(inst_array.str[j], '.') == NULL){
             //se a string não tiver um . a gente sabe que ela e de comparacao constante
-            output[i].comparation_value = inst_array.str[j];
+            output[i].second_member_constant = inst_array.str[j];
         }else{
-            //coloca o comparation_value como NULL para que quando necessario possamos descobrir se a condição é constante ou variavel
-            output[i].comparation_value = NULL;
-            output[i].comparation_member = createMemberFromFull(inst_array.str[j]);
+            //coloca o second_member_constant como NULL para que quando necessario possamos descobrir se a condição é constante ou variavel
+            output[i].second_member_constant = NULL;
+            output[i].second_member_term = createMemberFromFull(inst_array.str[j]);
         }
 
         j++; //pula o "and"
@@ -137,11 +142,11 @@ void isolateCommand(int *start_index, int *size, char *COMMAND, StringArray inst
     *size = i - *start_index;
 }
 
-Member *createMemberFromFull(const char *full){
+Field *createMemberFromFull(const char *full){
     char *str = malloc(strlen(full) + 1);
     strcpy(str,full); // faz uma copia do full para não altera-lo
 
-    Member *output = malloc(sizeof(Member));
+    Field *output = malloc(sizeof(Field));
     xalloc(output)
 
     char* dot_i = strchr(str, '.'); //pega o ponteiro de onde está o '.' da string
@@ -172,14 +177,14 @@ void freeCommand(Command *instruction){
     free(instruction->select);
 
     for (int i = 0; i < instruction->where_size; i++){
-        free(instruction->where[i].place->file_name);
-        free(instruction->where[i].place->key);
-        free(instruction->where[i].place);
+        free(instruction->where[i].first_member_term->file_name);
+        free(instruction->where[i].first_member_term->key);
+        free(instruction->where[i].first_member_term);
 
-        if(instruction->where[i].comparation_value == NULL){
-            free(instruction->where[i].comparation_member->file_name);
-            free(instruction->where[i].comparation_member->key);
-            free(instruction->where[i].comparation_member);
+        if(instruction->where[i].second_member_constant == NULL){
+            free(instruction->where[i].second_member_term->file_name);
+            free(instruction->where[i].second_member_term->key);
+            free(instruction->where[i].second_member_term);
         }
     }
     free(instruction->where);

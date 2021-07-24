@@ -271,24 +271,24 @@ int rowShould(Command *instruction, DataFrame *df_out, DataFrame* df_in, int iou
     for(int i = 0; i < instruction->where_size; i++){
 
         //se for uma comparacao de variavel 
-        if(instruction->where[i].comparation_value == NULL){
+        if(instruction->where[i].second_member_constant == NULL){
             
 
-            int place_has_df_in = strcmp(df_in->name, instruction->where[i].place->file_name) == 0;
+            int place_has_df_in = strcmp(df_in->name, instruction->where[i].first_member_term->file_name) == 0;
 
             //se o where[i] nao envolver o df_in pula
-            if(!(strcmp(df_in->name, instruction->where[i].place->file_name) == 0 ||
-            strcmp(df_in->name, instruction->where[i].comparation_member->file_name) == 0)){
+            if(!(strcmp(df_in->name, instruction->where[i].first_member_term->file_name) == 0 ||
+            strcmp(df_in->name, instruction->where[i].second_member_term->file_name) == 0)){
                 continue;
             }
 
-            Member df_in_member, df_out_member;
+            Field df_in_member, df_out_member;
             if(place_has_df_in){
-                df_in_member = *(instruction->where[i].place);
-                df_out_member = *(instruction->where[i].comparation_member);
+                df_in_member = *(instruction->where[i].first_member_term);
+                df_out_member = *(instruction->where[i].second_member_term);
             }else{
-                df_in_member = *(instruction->where[i].comparation_member);
-                df_out_member = *(instruction->where[i].place);
+                df_in_member = *(instruction->where[i].second_member_term);
+                df_out_member = *(instruction->where[i].first_member_term);
             }
 
             //pega a chave inteira de df_out
@@ -315,13 +315,13 @@ int rowShould(Command *instruction, DataFrame *df_out, DataFrame* df_in, int iou
         }else{
             //se for uma comparacao com constante so compara
             
-            if(strcmp(df_in->name, instruction->where[i].place->file_name) != 0){
+            if(strcmp(df_in->name, instruction->where[i].first_member_term->file_name) != 0){
                 continue;
             }
             
-            char* value_for_place = dfAt(df_in, iin, instruction->where[i].place->key);
+            char* value_for_place = dfAt(df_in, iin, instruction->where[i].first_member_term->key);
             
-            if(strcmp(value_for_place, instruction->where[i].comparation_value) != 0){
+            if(strcmp(value_for_place, instruction->where[i].second_member_constant) != 0){
                 return 0;
             }
         }

@@ -13,8 +13,8 @@
 
 //struct para administrar um array de strings
 typedef struct{
-    char **str;
-    int size;
+    char **str; //armazenas as strings
+    int size; //armazena quantas strings tem nesse array
 } StringArray;
 
 //pega uma linha separada por delim com cols valores e retorna esses valores separados em dest
@@ -30,8 +30,5 @@ void removeChar(char *str, char remove);
 
 //desaloca um array de strings da memoria
 void freeStrArray(StringArray instructionsArray);
-
-//realoca uma string que foi cortada
-void strrealloc(char *str);
 
 #endif
