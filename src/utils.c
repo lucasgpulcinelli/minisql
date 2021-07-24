@@ -1,6 +1,6 @@
 /* 
 Utils são funções gerais que nos ajudam em várias partes do código e não tem um bom local definido
- */
+*/
 
 #include <string.h>
 #include <stdio.h>
@@ -16,8 +16,9 @@ Utils são funções gerais que nos ajudam em várias partes do código e não t
 //remove um char de uma string em uma posição especifica
 void removeAt(char *str, int index);
 
+
 void fatalError(int line, char* file, char* fmt, ...){
-    int init_errno = errno;
+    int init_errno = errno; //errno pode mudar de valor em vfprintf, entao guarda o valor inical
 
     va_list ap;
 
@@ -31,21 +32,20 @@ void fatalError(int line, char* file, char* fmt, ...){
     exit(EXIT_FAILURE);
 }
 
-int separateCharacter(const char* line_buffer, unsigned int cols, char** dest, char* delim){
-    int i;
+int separateCharacter(const char* line_buffer, int cols, char** dest, char* delim){
 
     //cria uma copia de line_buffer para não fazer alterações diretamente nele
     char *str = malloc(strlen(line_buffer) + 1); 
-    xalloc(str)
+    xalloc(str);
     strcpy(str,line_buffer);    
 
     //cada call de strtok retorna o membro terminando com \0
     char* member = strtok(str, delim);
 
-    for(i = 0; i < cols; i++, member = strtok(NULL, delim)){
+    for(int i = 0; i < cols; i++, member = strtok(NULL, delim)){
 
         dest[i] = malloc(sizeof(char) * (strlen(member)+1));
-        xalloc(dest[i])
+        xalloc(dest[i]);
 
         strcpy(dest[i], member);
     }
@@ -55,8 +55,8 @@ int separateCharacter(const char* line_buffer, unsigned int cols, char** dest, c
     return 0;
 }
 
-unsigned int getNCols(char *string, char delimiter){
-    unsigned int cols = 1;
+int getNCols(char *string, char delimiter){
+    int cols = 1;
     char* last_occurance = string;
     while((last_occurance = strchr(last_occurance, delimiter)) != NULL){
         last_occurance++; //pula o caractere delimitador

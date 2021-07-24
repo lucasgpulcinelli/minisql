@@ -18,30 +18,30 @@ typedef struct{
     char* name; 
     char** keys; 
     char*** values; 
-    unsigned int rows;
-    unsigned int cols;
-    unsigned int _rows_maxsize;
+    int rows;
+    int cols;
+    int _rows_maxsize;
 } DataFrame;
 
 //cria dataframes vazios
-DataFrame* createDf(char** keys, unsigned int cols);
+DataFrame* createDf(char** keys, int cols);
 
 //le arquivos .tsv de nome filename e retorna um dataframe com as informacoes
 //em filename nao se deve colocar o .tsv no final
-DataFrame** readManyDfs(char** filenames, unsigned int size);
+DataFrame** readManyDfs(char** filenames, int size);
 DataFrame* readDf(char* filename);
 
 //coloca o valor value no final do dataframe df
 void appendDf(DataFrame* df, char** value);
 
 //pega o valor de df com linha row e coluna key
-char* dfAt(DataFrame* df, unsigned int row, char* key);
+char* dfAt(DataFrame* df, int row, char* key);
 
 //coloca em fptr as informacoes do dataframe df
 void writeDf(FILE* fptr, DataFrame* df);
 
 //deleta dataframes
-void deleteManyDfs(DataFrame** dflist, unsigned int size);
+void deleteManyDfs(DataFrame** dflist, int size);
 void deleteDf(DataFrame* df);
 
 

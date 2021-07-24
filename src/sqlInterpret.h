@@ -6,7 +6,7 @@
 /* 
 Field é usada para guardar campos de uma forma mais organizada
 file_name.key
- */
+*/
 typedef struct {
     char *file_name; //o nome do arquivo de origem desse campo
     char *key; //o campo que está sendo chamado
@@ -16,7 +16,7 @@ typedef struct {
 Condition guarda uma condição do where
 first_member é o que vem antes do igual
 second_member é o que vem dps do igual, sendo que pode ser um 'term', que significa ser variavel ou um 'constant'
- */
+*/
 typedef struct {
     Field *first_member_term; // é responsavel por guardar o membro da esquerda da comparação
     char *second_member_constant; //caso o membro da direita seja um valor constante ele é guardado aqui
@@ -26,7 +26,7 @@ typedef struct {
 /* 
 Command guarda diretamente os comandos passados pelo usuario
 select X.Y from X where X.W = U vai ser salvo de forma organizada nessa string
- */
+*/
 typedef struct {
     StringArray from; //armazena um StringArray com todos os arquivos pedidos no from
     Condition *where; //armazena um array de condições pedidas no where

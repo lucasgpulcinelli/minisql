@@ -1,12 +1,10 @@
 /*
 SQL Interpret é responsável por interpretar o comando passado pelo usuário
-É aqui que a struct de comandos, que separa os três diferentes tipos de  instrução, é preenchida
+É aqui que a struct de comandos, que separa os três diferentes tipos de instrução, é preenchida
 */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <errno.h>
-#include <stdarg.h>
 
 #include "sqlInterpret.h"
 #include "dataframe.h"
@@ -17,7 +15,7 @@ SQL Interpret é responsável por interpretar o comando passado pelo usuário
 
 StringArray getInstructions(void){
     char *raw_instructions = malloc(sizeof(char) * SIZE);
-    xalloc(raw_instructions)
+    xalloc(raw_instructions);
 
     fgets(raw_instructions, SIZE, stdin);
     removeChar(raw_instructions, '\n');
@@ -25,7 +23,7 @@ StringArray getInstructions(void){
     StringArray inst_array;
     inst_array.size = getNCols(raw_instructions, ' ');
     inst_array.str = malloc(inst_array.size * sizeof(char *));
-    xalloc(inst_array.str)
+    xalloc(inst_array.str);
     
     separateCharacter(raw_instructions, inst_array.size, inst_array.str, " ");
 
@@ -42,7 +40,7 @@ StringArray getInstructions(void){
 
 Command *generateCommand(StringArray instructions_array){
     Command *instruction = malloc(sizeof(Command) * 1);
-    xalloc(instruction)
+    xalloc(instruction);
 
     instruction->from.str = getSourceFiles(instructions_array, &instruction->from.size);
     instruction->where = getConditions(instructions_array, &instruction->where_size);
@@ -56,7 +54,7 @@ char **getSourceFiles(StringArray inst_array, int *number_of_files){
     isolateCommand(&start, number_of_files, FROM, inst_array);
 
     char **output = malloc(*number_of_files * sizeof(char *));
-    xalloc(output)
+    xalloc(output);
 
     //j é usado para dar o loop no array de instruções (start até (start + size))
     //i é usado para dar loop no array de arquivos (0 até size), n precisa ser limitado em cima pq o do j consegue limita-lo
@@ -64,7 +62,7 @@ char **getSourceFiles(StringArray inst_array, int *number_of_files){
     for (int j = start, i = 0; j < final_index; j++, i++){
         int aloc_size = strlen(inst_array.str[j]);
         output[i] = malloc(sizeof(char) * aloc_size + 1);
-        xalloc(output[i])
+        xalloc(output[i]);
 
         strcpy(output[i], inst_array.str[j]);
     }
@@ -76,7 +74,7 @@ Field *getSelection(StringArray inst_array, int *amount){
     isolateCommand(&start, amount, SELECT, inst_array);
 
     Field *output = malloc(*amount * sizeof(Field));
-    xalloc(output)
+    xalloc(output);
 
     int final_index = start + *amount;
     for (int j = start, i = 0; j < final_index; j++, i++){
@@ -105,7 +103,7 @@ Condition *getConditions(StringArray inst_array, int *amount){
     *amount += 1; //exceto o ultimo que nao tem o "and" ou "or"
 
     Condition *output = malloc(*amount * sizeof(Condition));
-    xalloc(output)
+    xalloc(output);
 
     for (int j = start, i = 0; j < final_index; j++, i++){
         output[i].first_member_term = createMemberFromFull(inst_array.str[j]);
@@ -152,18 +150,18 @@ Field *createMemberFromFull(const char *full){
     strcpy(str,full); // faz uma copia do full para não altera-lo
 
     Field *output = malloc(sizeof(Field));
-    xalloc(output)
+    xalloc(output);
 
     char* dot_i = strchr(str, '.'); //pega o ponteiro de onde está o '.' da string
 
     output->key = malloc(strlen(dot_i+1) + 1); //cria uma key que vai da string que inicia dps do '.' até o '/0'
-    xalloc(output->key)
+    xalloc(output->key);
     strcpy(output->key,dot_i+1); //copia essa string de '.'+1 até '/0' para a key
 
     *dot_i = '\0'; //transforma o '.' em '/0' encurtando a string str
 
     output->file_name = malloc(strlen(str) + 1); //cria um file name q do tamanho de str cortado até o '.'
-    xalloc(output->file_name)
+    xalloc(output->file_name);
     strcpy(output->file_name,str); //como str só vai até o '.' ele é igual ao file_name
 
     free(str); //libera essa copia do full que está toda quebrada
