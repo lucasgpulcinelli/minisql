@@ -6,10 +6,10 @@
 #define WHERE "where"
 
 //macro para abortar um programa em caso de erro
-#define abortProgram(fmt, ...) fatalError(__LINE__, __FILE__, fmt, __VA_ARGS__);
+#define abortProgram(...) fatalError(__LINE__, __FILE__, __VA_ARGS__);
 
 //macro para testar se um malloc foi bem sucedido
-#define xalloc(p) if(!p){abortProgram("Malloc ", NULL);}
+#define xalloc(p) if(!p){abortProgram("Malloc ");}
 
 #define DEBUG printf("File: %s - Line: %i\n",__FILE__, __LINE__);
 #define watch(var) printf("%i\n", var)

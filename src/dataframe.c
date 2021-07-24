@@ -199,7 +199,7 @@ void writeDf(FILE* fptr, DataFrame* df){
 
     if(df == NULL){
         errno = EFAULT;
-        abortProgram("df write ", NULL);
+        abortProgram("df write ");
     }
 
     for(int i = 0; i < df->rows; i++){
