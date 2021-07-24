@@ -60,15 +60,13 @@ char **getSourceFiles(StringArray inst_array, int *number_of_files){
 
     //j é usado para dar o loop no array de instruções (start até (start + size))
     //i é usado para dar loop no array de arquivos (0 até size), n precisa ser limitado em cima pq o do j consegue limita-lo
-    int i = 0;
     int final_index = start + *number_of_files;
-    for (int j = start; j < final_index; j++){
+    for (int j = start, i = 0; j < final_index; j++, i++){
         int aloc_size = strlen(inst_array.str[j]);
         output[i] = malloc(sizeof(char) * aloc_size + 1);
         xalloc(output[i])
 
         strcpy(output[i], inst_array.str[j]);
-        i++;
     }
     return output;
 }
@@ -81,7 +79,7 @@ Field *getSelection(StringArray inst_array, int *amount){
     xalloc(output)
 
     int final_index = start + *amount;
-    for (int i = 0, j = start; j < final_index; i++, j++){
+    for (int j = start, i = 0; j < final_index; j++, i++){
         Field *holder = createMemberFromFull(inst_array.str[j]); //utiliza um holder pois output[i] não é um pointer
         xalloc(holder);
 
