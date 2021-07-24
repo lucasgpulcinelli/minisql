@@ -10,17 +10,12 @@
 
 StringArray getInstructions(void){
     char *raw_instructions = malloc(sizeof(char) * SIZE);
-
     fgets(raw_instructions, SIZE, stdin);
     removeChar(raw_instructions, '\n');
-
-    int allocation_size = strlen(raw_instructions);
-    raw_instructions = realloc(raw_instructions, sizeof(char) * allocation_size + 1);
     
     StringArray inst_array;
     inst_array.size = getNcols(raw_instructions, ' ');
-    
-    inst_array.str = malloc(sizeof(char *) * inst_array.size);
+    inst_array.str = malloc(inst_array.size * sizeof(char *));
     separateCharacter(raw_instructions, inst_array.size, inst_array.str, " ");
 
     free(raw_instructions);
@@ -52,6 +47,8 @@ char **getSourceFiles(StringArray inst_array, int *number_of_files){
     char **output = malloc(*number_of_files * sizeof(char *));
     xalloc(output)
 
+    //j é usado para dar o loop no array de instruções (start até (start + size))
+    //i é usado para dar loop no array de arquivos (0 até size), n precisa ser limitado em cima pq o do j consegue limita-lo
     int i = 0;
     int final_index = start + *number_of_files;
     for (int j = start; j < final_index; j++){
@@ -60,7 +57,6 @@ char **getSourceFiles(StringArray inst_array, int *number_of_files){
         xalloc(output[i])
 
         strcpy(output[i], inst_array.str[j]);
-
         i++;
     }
     return output;
@@ -75,7 +71,9 @@ Member *getSelection(StringArray inst_array, int *amount){
 
     int final_index = start + *amount;
     for (int i = 0, j = start; j < final_index; i++, j++){
-        Member *holder = createMemberFromFull(inst_array.str[j]);
+        Member *holder = createMemberFromFull(inst_array.str[j]); //utiliza um holder pois output[i] não é um pointer
+        xalloc(holder);
+
         output[i] = *holder;
         free(holder);
     }
@@ -103,16 +101,18 @@ Condition *getConditions(StringArray inst_array, int *amount){
     for (int j = start, i = 0; j < final_index; j++, i++){
         output[i].place = createMemberFromFull(inst_array.str[j]);
 
-        j += 2; //pula o "=" 
+        j += 2; //pula o "=" e vai para o proximo  
         
         if(strchr(inst_array.str[j], '.') == NULL){
             //se a string não tiver um . a gente sabe que ela e de comparacao constante
             output[i].comparation_value = inst_array.str[j];
         }else{
+            //coloca o comparation_value como NULL para que quando necessario possamos descobrir se a condição é constante ou variavel
             output[i].comparation_value = NULL;
             output[i].comparation_member = createMemberFromFull(inst_array.str[j]);
         }
-        j++;
+
+        j++; //pula o "and"
     }
 
     return output;
@@ -139,22 +139,22 @@ void isolateCommand(int *start_index, int *size, char *COMMAND, StringArray inst
 
 Member *createMemberFromFull(const char *full){
     char *str = malloc(strlen(full) + 1);
-    strcpy(str,full);
+    strcpy(str,full); // faz uma copia do full para não altera-lo
 
     Member *output = malloc(sizeof(Member));
     xalloc(output)
 
-    char* dot_i = strchr(str, '.');
+    char* dot_i = strchr(str, '.'); //pega o ponteiro de onde está o '.' da string
 
-    output->key = malloc(strlen(dot_i+1) + 1);
-    strcpy(output->key,dot_i+1);
+    output->key = malloc(strlen(dot_i+1) + 1); //cria uma key que vai da string que inicia dps do '.' até o '/0'
+    strcpy(output->key,dot_i+1); //copia essa string de '.'+1 até '/0' para a key
 
-    *dot_i = '\0';
+    *dot_i = '\0'; //transforma o '.' em '/0' encurtando a string str
 
-    output->file_name = malloc(strlen(str) + 1);
-    strcpy(output->file_name,str);
+    output->file_name = malloc(strlen(str) + 1); //cria um file name q do tamanho de str cortado até o '.'
+    strcpy(output->file_name,str); //como str só vai até o '.' ele é igual ao file_name
 
-    free(str);
+    free(str); //libera essa copia do full que está toda quebrada
 
     return output;
 }
