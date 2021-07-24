@@ -22,6 +22,11 @@ StringArray getInstructions(void){
     inst_array.str = malloc(sizeof(char *) * inst_array.size);
     separateCharacter(raw_instructions, inst_array.size, inst_array.str, " ");
 
+    for (int i = 0; i < inst_array.size; i++){
+        removeChar(inst_array.str[i], ',');
+        removeChar(inst_array.str[i], '\"');
+        removeChar(inst_array.str[i], '\n');
+    }
     free(raw_instructions);
 
     for(int i = 0; i < inst_array.size; i++){
@@ -42,16 +47,11 @@ Command *generateCommand(StringArray instructions_array){
             char **holder = malloc(sizeof(char *) * 2);
             xalloc(holder)
 
-            char *arrayHolder = malloc(strlen(instructions_array.str[i]) + 1);
-            strcpy(arrayHolder,instructions_array.str[i]);
-            removeChar(arrayHolder, ',');
-            separateCharacter(arrayHolder, 2, holder, ".");
 
             instruction->sources[instruction->sources_size].file_name = holder[0];
             instruction->sources[instruction->sources_size].key = holder[1];
 
             instruction->sources_size++;
-            free(arrayHolder);
             free(holder);
         }
     }
@@ -139,10 +139,7 @@ Condition *getConditions(StringArray inst_array, int *amount){
         output[i].place->key= holder[1];
 
         j += 2; //jumps the = sign
-        removeChar(inst_array.str[j], ',');
         output[i].comparation_value = inst_array.str[j];
-        removeChar(output[i].comparation_value, '\"');
-        removeChar(output[i].comparation_value, '\n');
 
         j++; //jumps the 'and'
         free(holder);
