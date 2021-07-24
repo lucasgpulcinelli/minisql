@@ -337,9 +337,6 @@ void writeDf(FILE* fptr, DataFrame* df, int with_header, Command *instruction){
             writeTsvRow(fptr, df->values[i], instruction->select_size);
             continue;
         }
-        if(i == 59064){
-            printf("hi");
-        }
 
         int meetsConditions = 0;
         for (int j = 0; j < instruction->where_size; j++){
