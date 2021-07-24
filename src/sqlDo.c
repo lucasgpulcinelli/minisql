@@ -1,12 +1,20 @@
+/* 
+SQL Do é responsavel por filtrar os dados de acordo com as instruções passadas
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <stdarg.h>
 
 #include "sqlDo.h"
 #include "dataframe.h"
+#include "utils.h"
 
+//funções internas:
+
+//verifica se uma linha deve ser incluida na base de dados
 int rowShould(Command *instruction, DataFrame *df_out, DataFrame* df_in, int iout, int iin);
 
 DataFrame* processCommand(Command* instruction){

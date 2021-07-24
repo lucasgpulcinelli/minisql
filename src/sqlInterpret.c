@@ -1,7 +1,12 @@
+/*
+SQL Interpret é responsável por interpretar o comando passado pelo usuário
+É aqui que a struct de comandos, que separa os três diferentes tipos de  instrução, é preenchida
+*/
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <stdarg.h>
 
 #include "sqlInterpret.h"
 #include "dataframe.h"
@@ -9,10 +14,6 @@
 
 #define SIZE 1024
 
-/*
-SQL Interpret é responsável por interpretar o comando passado pelo usuário
-É aqui que a struct de comandos, que separa os três diferentes tipos de  instrução, é preenchida
-*/
 
 StringArray getInstructions(void){
     char *raw_instructions = malloc(sizeof(char) * SIZE);

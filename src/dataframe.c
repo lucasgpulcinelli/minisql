@@ -1,8 +1,12 @@
+/*
+Dataframe é responsável por armazenar as informações retiradas dos arquivos TSV
+*/
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <stdarg.h>
 
 #include "dataframe.h"
 #include "utils.h"

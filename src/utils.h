@@ -5,8 +5,8 @@
 #define FROM "from"
 #define WHERE "where"
 
-//testa a alocação de um malloc feita na linha anterior
-#define xalloc(p) if(!p){fprintf(stderr, "error: %s at (%s:%i)\n", strerror(errno), __FILE__, __LINE__ - 1); exit(-1);} 
+//macro para testar se um malloc foi bem sucedido
+#define xalloc(p) if(!p){fatalError(__LINE__, __FILE__, "malloc ");}
 
 #define DEBUG printf("File: %s - Line: %i\n",__FILE__, __LINE__);
 #define watch(var) printf("%i\n", var)
@@ -22,6 +22,9 @@ typedef struct{
 //aloca apenas os membros de dest (dest[0] ate dest[cols-1]), mas nao dest em si
 //retorna != 0 em caso de erro 
 int separateCharacter(const char* line_buffer, unsigned int cols, char** dest, char* delim);
+
+//printa um erro fatal caso ele ocorra
+void fatalError(int line, char* file, char* fmt, ...);
 
 //descobre o numero de colunas em uma string com delimitador delim
 unsigned int getNCols(char *string, char delimiter);

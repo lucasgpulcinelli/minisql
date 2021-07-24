@@ -1,12 +1,35 @@
+/* 
+Utils são funções gerais que nos ajudam em várias partes do código e não tem um bom local definido
+ */
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <stdarg.h>
 
 #include "utils.h"
 #include "sqlInterpret.h"
 
+//funções internas
+
+//remove um char de uma string em uma posição especifica
 void removeAt(char *str, int index);
+
+void fatalError(int line, char* file, char* fmt, ...){
+    int init_errno = errno;
+
+    va_list ap;
+
+    va_start(ap, fmt);
+
+    vfprintf(stderr, fmt, ap);
+    fprintf(stderr, "error at line %d of file %s: %s\n", line, file, strerror(init_errno));
+    
+    va_end(ap);
+
+    exit(EXIT_FAILURE);
+}
 
 int separateCharacter(const char* line_buffer, unsigned int cols, char** dest, char* delim){
     int i;
