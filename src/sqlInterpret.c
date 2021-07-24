@@ -12,9 +12,9 @@ StringArray getInstructions(void){
     char *raw_instructions = malloc(sizeof(char) * SIZE);
 
     fgets(raw_instructions, SIZE, stdin);
-    raw_instructions[strlen(raw_instructions)-1] = '\0';
-    int allocation_size = strlen(raw_instructions);
+    removeChar(raw_instructions, '\n');
 
+    int allocation_size = strlen(raw_instructions);
     raw_instructions = realloc(raw_instructions, sizeof(char) * allocation_size + 1);
     
     StringArray inst_array;
@@ -29,7 +29,6 @@ StringArray getInstructions(void){
     for(int i = 0; i < inst_array.size; i++){
         removeChar(inst_array.str[i], ',');
         removeChar(inst_array.str[i], '\"');
-        removeChar(inst_array.str[i], '\n');
     }
 
     return inst_array;
