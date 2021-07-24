@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "utils.h"
@@ -10,7 +11,8 @@ int separateCharacter(const char* line_buffer, unsigned int cols, char** dest, c
     int got_null = 0;
     int i;
 
-    char *str = malloc(strlen(line_buffer) + 1);
+    //cria uma copia de line_buffer para não fazer alterações
+    char *str = malloc(strlen(line_buffer) + 1); 
     strcpy(str,line_buffer);    
 
     //cada call de strtok retorna o membro terminando com \0
@@ -26,6 +28,7 @@ int separateCharacter(const char* line_buffer, unsigned int cols, char** dest, c
         strcpy(dest[i], member);
     }
 
+    free(str);
     if(got_null){
         for(int j = 0; j < i; j++){
             free(dest[i]);
@@ -77,4 +80,13 @@ void removeAt(char *str, int index){
     }
     stringSize--; //diminui o tamanho do array
     str[stringSize] = '\0';
+}
+
+void strrealloc(char *str){
+    char *copy = malloc(strlen(str) + 1);
+    strcpy(copy,str);
+
+    int size = strlen(str) + 1;
+    str = realloc(copy, size);
+    xalloc(str);
 }

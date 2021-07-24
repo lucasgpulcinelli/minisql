@@ -31,4 +31,7 @@ void removeChar(char *str, char remove);
 //desaloca um array de strings da memoria
 void freeStrArray(StringArray instructionsArray);
 
+//realoca uma string que foi cortada
+void strrealloc(char *str);
+
 #endif

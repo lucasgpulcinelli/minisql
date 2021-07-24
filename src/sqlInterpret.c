@@ -76,14 +76,8 @@ Member *getSelection(StringArray inst_array, int *amount){
 
     int final_index = start + *amount;
     for (int i = 0, j = start; j < final_index; i++, j++){
-        char **holder = malloc(sizeof(char *) * 2);
-        xalloc(holder)
-
-        separateCharacter(inst_array.str[j], 2, holder, ".");
-
-        output[i].file_name = holder[0];
-        output[i].key = holder[1];
-
+        Member *holder = createMemberFromFull(inst_array.str[j]);
+        output[i] = *holder;
         free(holder);
     }
 
@@ -108,49 +102,28 @@ Condition *getConditions(StringArray inst_array, int *amount){
     xalloc(output)
 
     for (int j = start, i = 0; j < final_index; j++, i++){
-        char **holder = malloc(sizeof(char *) * 2);
-        xalloc(holder)
-        separateCharacter(inst_array.str[j], 2, holder, ".");
-
-        output[i].place = malloc(sizeof(Member));
-        xalloc(output[i].place)
-
-        output[i].place->file_name = holder[0];
-        output[i].place->key= holder[1];
+        output[i].place = createMemberFromFull(inst_array.str[j]);
 
         j += 2; //pula o "=" 
         
         if(strchr(inst_array.str[j], '.') == NULL){
             //se a string não tiver um . a gente sabe que ela e de comparacao constante
-
             output[i].comparation_value = inst_array.str[j];
         }else{
             output[i].comparation_value = NULL;
-
-            output[i].comparation_member = malloc(sizeof(Member));
-            xalloc(output[i].comparation_member);
-
-            char* dot_i = strchr(inst_array.str[j], '.');
-
-            output[i].comparation_member->key = dot_i+1;
-            *dot_i = '\0';
-            output[i].comparation_member->file_name = inst_array.str[j];
-
-
+            output[i].comparation_member = createMemberFromFull(inst_array.str[j]);
         }
         j++;
-
-        free(holder);
     }
 
     return output;
 }
 
 void isolateCommand(int *start_index, int *size, char *COMMAND, StringArray inst_array){
-    *start_index = -1;
+    *start_index = -1; //inicializa start_index como -1
     int i;
     for (i = 0; i < inst_array.size; i++){
-        if (!strcmp(inst_array.str[i], COMMAND)){
+        if (!strcmp(inst_array.str[i], COMMAND)){ //caso ele encontre o comando altera o start_index para ser a instrução seguinte
             *start_index = i + 1;
             continue;
         }
@@ -158,11 +131,33 @@ void isolateCommand(int *start_index, int *size, char *COMMAND, StringArray inst
         int is_select = !strcmp(inst_array.str[i], SELECT);
         int is_from = !strcmp(inst_array.str[i], FROM);
         int is_where = !strcmp(inst_array.str[i], WHERE);
-        if ((is_select || is_from || is_where) && *start_index != -1){
+        if ((is_select || is_from || is_where) && *start_index != -1){ //se já tivermos encontrado a posição inicial do comando e encontramors algum outro comando
             break;
         }
     }
     *size = i - *start_index;
+}
+
+Member *createMemberFromFull(const char *full){
+    char *str = malloc(strlen(full) + 1);
+    strcpy(str,full);
+
+    Member *output = malloc(sizeof(Member));
+    xalloc(output)
+
+    char* dot_i = strchr(str, '.');
+
+    output->key = malloc(strlen(dot_i+1) + 1);
+    strcpy(output->key,dot_i+1);
+
+    *dot_i = '\0';
+
+    output->file_name = malloc(strlen(str) + 1);
+    strcpy(output->file_name,str);
+
+    free(str);
+
+    return output;
 }
 
 void freeCommand(Command *instruction){
@@ -183,7 +178,9 @@ void freeCommand(Command *instruction){
         free(instruction->where[i].place);
 
         if(instruction->where[i].comparation_value == NULL){
-            free(instruction->where->comparation_member);
+            free(instruction->where[i].comparation_member->file_name);
+            free(instruction->where[i].comparation_member->key);
+            free(instruction->where[i].comparation_member);
         }
     }
     free(instruction->where);

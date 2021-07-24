@@ -33,6 +33,8 @@ char** getSourceFiles(StringArray inst_array, int *number_of_files);
 
 void isolateCommand(int *start_index, int *size, char *begin, StringArray inst_array);
 
+Member *createMemberFromFull(const char *full);
+
 //dealoca um command da memoria
 void freeCommand(Command *instruction);
 
