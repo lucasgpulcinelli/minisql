@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #include "sqlInterpret.h"
 #include "dataframe.h"
@@ -15,12 +16,16 @@ SQL Interpret é responsável por interpretar o comando passado pelo usuário
 
 StringArray getInstructions(void){
     char *raw_instructions = malloc(sizeof(char) * SIZE);
+    xalloc(raw_instructions)
+
     fgets(raw_instructions, SIZE, stdin);
     removeChar(raw_instructions, '\n');
     
     StringArray inst_array;
-    inst_array.size = getNcols(raw_instructions, ' ');
+    inst_array.size = getNCols(raw_instructions, ' ');
     inst_array.str = malloc(inst_array.size * sizeof(char *));
+    xalloc(inst_array.str)
+    
     separateCharacter(raw_instructions, inst_array.size, inst_array.str, " ");
 
     free(raw_instructions);
@@ -144,6 +149,7 @@ void isolateCommand(int *start_index, int *size, char *COMMAND, StringArray inst
 
 Field *createMemberFromFull(const char *full){
     char *str = malloc(strlen(full) + 1);
+    xalloc(str);
     strcpy(str,full); // faz uma copia do full para não altera-lo
 
     Field *output = malloc(sizeof(Field));
@@ -152,11 +158,13 @@ Field *createMemberFromFull(const char *full){
     char* dot_i = strchr(str, '.'); //pega o ponteiro de onde está o '.' da string
 
     output->key = malloc(strlen(dot_i+1) + 1); //cria uma key que vai da string que inicia dps do '.' até o '/0'
+    xalloc(output->key)
     strcpy(output->key,dot_i+1); //copia essa string de '.'+1 até '/0' para a key
 
     *dot_i = '\0'; //transforma o '.' em '/0' encurtando a string str
 
     output->file_name = malloc(strlen(str) + 1); //cria um file name q do tamanho de str cortado até o '.'
+    xalloc(output->file_name)
     strcpy(output->file_name,str); //como str só vai até o '.' ele é igual ao file_name
 
     free(str); //libera essa copia do full que está toda quebrada

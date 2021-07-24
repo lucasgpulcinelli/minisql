@@ -32,7 +32,7 @@ DataFrame** readManyDfs(char** filenames, unsigned int size);
 DataFrame* readDf(char* filename);
 
 //coloca o valor value no final do dataframe df
-int appendDf(DataFrame* df, char** value);
+void appendDf(DataFrame* df, char** value);
 
 //pega o valor de df com linha row e coluna key
 char* dfAt(DataFrame* df, unsigned int row, char* key);

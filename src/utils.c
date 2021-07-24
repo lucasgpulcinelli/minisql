@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #include "utils.h"
 #include "sqlInterpret.h"
@@ -8,11 +9,11 @@
 void removeAt(char *str, int index);
 
 int separateCharacter(const char* line_buffer, unsigned int cols, char** dest, char* delim){
-    int got_null = 0;
     int i;
 
-    //cria uma copia de line_buffer para não fazer alterações
+    //cria uma copia de line_buffer para não fazer alterações diretamente nele
     char *str = malloc(strlen(line_buffer) + 1); 
+    xalloc(str)
     strcpy(str,line_buffer);    
 
     //cada call de strtok retorna o membro terminando com \0
@@ -21,24 +22,17 @@ int separateCharacter(const char* line_buffer, unsigned int cols, char** dest, c
     for(i = 0; i < cols; i++, member = strtok(NULL, delim)){
 
         dest[i] = malloc(sizeof(char) * (strlen(member)+1));
-        if(dest[i] == NULL){
-            got_null = 1;
-            break;
-        }
+        xalloc(dest[i])
+
         strcpy(dest[i], member);
     }
 
     free(str);
-    if(got_null){
-        for(int j = 0; j < i; j++){
-            free(dest[i]);
-        }
-        return -1;
-    }
+
     return 0;
 }
 
-unsigned int getNcols(char *string, char delimiter){
+unsigned int getNCols(char *string, char delimiter){
     unsigned int cols = 1;
     char* last_occurance = string;
     while((last_occurance = strchr(last_occurance, delimiter)) != NULL){
@@ -54,7 +48,6 @@ void removeChar(char *str, char remove){
     for(int k = 0; k < string_size; k++){
             if (str[k] == remove)
             {
-                //str[k] = '\0';
                 removeAt(str, k);
                 string_size--;
             }

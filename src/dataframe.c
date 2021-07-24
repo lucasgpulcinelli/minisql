@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #include "dataframe.h"
 #include "utils.h"
@@ -12,9 +13,11 @@
 
 //funcoes usadas internamente:
 
-//separa as diferentes keys contidas em line_buffer e coloca em *keys
-//assume que *keys nao foi alocado (por nao saber a quantidade de colunas), por isso o ponteiro para essa variavel
-//retorna a quantidade de valores separados por tabs em keys (colunas do dataframe / tamanho de *keys)
+/* 
+separa as diferentes keys contidas em line_buffer e coloca em *keys
+assume que *keys nao foi alocado (por nao saber a quantidade de colunas), por isso o ponteiro para essa variavel
+retorna a quantidade de valores separados por tabs em keys (colunas do dataframe / tamanho de *keys) 
+*/
 long int readHeader(char* line_buffer, char***keys);
 
 //igual a append_df, mas usando uma linha tsv ao invez de uma coluna ja separada
@@ -29,46 +32,30 @@ int dfIncreaseSize(DataFrame* df);
 
 long int readHeader(char* line_buffer, char*** keys){
     //descobre quantas colunas o header tem
-    unsigned int cols = getNcols(line_buffer, '\t');
+    unsigned int cols = getNCols(line_buffer, '\t');
 
     //cria as keys
     *keys = malloc(sizeof(char**) * cols);
-    if(keys == NULL){
-        return -1;
-    }
+    xalloc(keys)
 
-    if(separateCharacter(line_buffer, cols, *keys, "\t")){
-        return -1;
-    }
+    separateCharacter(line_buffer, cols, *keys, "\t");
 
     return cols;
 }
 
 int dfIncreaseSize(DataFrame* df){
     char*** newvalues = realloc(df->values, sizeof(char**) * df->_rows_maxsize*2);
-    if(newvalues == NULL){
-        return -1;
-    }
+    xalloc(newvalues)
+
     df->values = newvalues;
 
-    int got_null = 0;
     unsigned int i;
     for(i = df->_rows_maxsize; i < df->_rows_maxsize*2; i++){
 
         df->values[i] = malloc(sizeof(char*) * df->cols);
-
-        if(df->values[i] == NULL){
-            got_null = 1;
-            break;
-        }
+        xalloc(df->values[i])
     }
 
-    if(got_null){
-        for(unsigned int j = df->_rows_maxsize; j < i; j++){
-            free(df->values[j]);
-        }
-        return -1;
-    }
     df->_rows_maxsize *= 2;
 
     return 0;
@@ -77,9 +64,7 @@ int dfIncreaseSize(DataFrame* df){
 int appendDfLine(DataFrame* df, char* line_buffer){
     //realoca memoria se necessario
     if(df->_rows_maxsize < df->rows+1){        
-        if(dfIncreaseSize(df)){
-            return -1;
-        }
+        dfIncreaseSize(df);
     }
 
     return separateCharacter(line_buffer, df->cols, df->values[df->rows++], "\t");
@@ -93,12 +78,9 @@ void writeTsvRow(FILE* fptr, char** values, unsigned int size){
     fprintf(fptr, "%s\n", values[size-1]);
 }
 
-
 DataFrame* createDf(char** keys, unsigned int cols){
     DataFrame* df = malloc(sizeof(DataFrame));
-    if(df == NULL){
-        return NULL;
-    }
+    xalloc(df)
 
     df->name = NULL;
     df->keys = keys;
@@ -107,29 +89,13 @@ DataFrame* createDf(char** keys, unsigned int cols){
     df->_rows_maxsize = INIT_ROWS_MAXSIZE;
 
     df->values = malloc(sizeof(char**) * df->_rows_maxsize);
-    if(df->values == NULL){
-        free(df);
-        return NULL;
-    }
+    xalloc(df->values)
 
-    int got_null = 0;
     int i;
     for(i = 0; i < df->_rows_maxsize; i++){
 
         df->values[i] = malloc(sizeof(char*) * df->cols);
-        if(df->values[i] == NULL){
-            got_null = 1;
-            break;
-        }
-    }
-
-    if(got_null){
-        for(int j = 0; j < i; j++){
-            free(df->values[i]);
-        }
-        free(df->values);
-        free(df);
-        return NULL;
+        xalloc(df->values[i])
     }
 
     return df;
@@ -137,30 +103,15 @@ DataFrame* createDf(char** keys, unsigned int cols){
 
 DataFrame** readManyDfs(char** filenames, unsigned int size){
 
-    DataFrame** dflist = malloc(sizeof(DataFrame*) * size);
-    if(dflist == NULL){
-        return NULL;
-    }
+    DataFrame** df_list = malloc(sizeof(DataFrame*) * size);
+    xalloc(df_list)
 
-    int got_null = 0;
     int i;
     for(i = 0; i < size; i++){
-        dflist[i] = readDf(filenames[i]);
-        if(dflist[i] == NULL){
-            got_null = 1;
-            break;
-        }
+        df_list[i] = readDf(filenames[i]);
     }
 
-    if(got_null){
-        for(int j = 0; j < i; j++){
-            deleteDf(dflist[i]);
-        }
-        free(dflist);
-        return NULL;
-    }
-
-    return dflist;
+    return df_list;
 }
 
 DataFrame* readDf(char* filename){
@@ -193,29 +144,11 @@ DataFrame* readDf(char* filename){
     
     //cria um df com essas keys
     DataFrame* df = createDf(keys, cols);
-    if(df == NULL){
-
-        for(int i = 0; i < cols; i++){
-            free(keys[i]);
-        }
-        free(keys);
-        free(df);
-        fclose(fptr);
-        return NULL;   
-    }
     
     //inicializa o nome
     df->name = malloc(sizeof(char) * (strlen(filename)+1));
-    if(df->name == NULL){
+    xalloc(df->name)
 
-        for(int i = 0; i < cols; i++){
-            free(keys[i]);
-        }
-        free(keys);
-        free(df);
-        fclose(fptr);
-        return NULL;
-    }
     strcpy(df->name, filename);
 
     //para cada linha no input ate o EOF coloca no dataframe
@@ -223,46 +156,29 @@ DataFrame* readDf(char* filename){
 
         line_buffer[strlen(line_buffer)-1] = '\0';
 
-        if(appendDfLine(df, line_buffer)){
-            deleteDf(df);
-            fclose(fptr);
-            return NULL;
-        }
+        appendDfLine(df, line_buffer);
     }
 
     fclose(fptr);
     return df;
 }
 
-int appendDf(DataFrame* df, char** value){
+void appendDf(DataFrame* df, char** value){
     //realoca memoria se necessario
     if(df->_rows_maxsize < df->rows+1){        
-        if(dfIncreaseSize(df)){
-            return -1;
-        }
+        dfIncreaseSize(df);
     }
 
-    int got_null = 0;
     int i;
     for(i = 0; i < df->cols; i++){
 
         df->values[df->rows][i] = malloc(sizeof(char) * (strlen(value[i])+1));
-        if(df->values[df->rows][i] == NULL){
-            got_null = 1;
-            break;
-        }
+        xalloc(df->values[df->rows][i])
+
         strcpy(df->values[df->rows][i], value[i]);
     }
 
-    if(got_null){
-        for(int j = 0; j < i; j++){
-            free(df->values[df->rows][i]);
-        }
-        return -1;
-    }
-
     df->rows++;
-    return 0;
 }
 
 char* dfAt(DataFrame* df, unsigned int row, char* key){
@@ -286,7 +202,6 @@ void writeDf(FILE* fptr, DataFrame* df){
         fprintf(stderr, "Erro, call para write_df foi chamado com df NULL\n");
         return;
     }
-
 
     for(int i = 0; i < df->rows; i++){
        writeTsvRow(fptr, df->values[i], df->cols);

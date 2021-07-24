@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
+
 #include "sqlDo.h"
 #include "dataframe.h"
 
@@ -10,59 +12,26 @@ int rowShould(Command *instruction, DataFrame *df_out, DataFrame* df_in, int iou
 DataFrame* processCommand(Command* instruction){
     //cria o df com os arquivos do from
     DataFrame** dfs = readManyDfs(instruction->from.str, instruction->from.size);
-    if(dfs == NULL){
-        return NULL;
-    }
     
     //primeiro, copia dfs[0] para o df_out com o nome do arquivo nas chaves, para isso:
-
     //aloca e seta as chaves
     char** out_keys = malloc(sizeof(char*) * dfs[0]->cols);
-    if(out_keys == NULL){
-        deleteManyDfs(dfs, instruction->from.size);
-        return NULL;
-    }
+    xalloc(out_keys)
 
-    int got_null = 0;
     int i;
     for(i = 0; i < dfs[0]->cols; i++){
 
         out_keys[i] = malloc(sizeof(char) * (strlen(dfs[0]->keys[i]) +1+ strlen(dfs[0]->name)+ 1));
-        if(out_keys[i] == NULL){
-            got_null = 1;
-            break;
-        }
+        xalloc(out_keys[i])
 
         sprintf(out_keys[i], "%s.%s", dfs[0]->name, dfs[0]->keys[i]);
     }
 
-    if(got_null){
-        for(int j = 0; j < i; j++){
-            free(out_keys[i]);
-        }
-        free(out_keys);
-        deleteManyDfs(dfs, instruction->from.size);
-        return NULL;
-    }
-
     //cria o df final
     DataFrame* df_out = createDf(out_keys, dfs[0]->cols);
-    if(df_out == NULL){
-        for(int j = 0; j < i; j++){
-            free(out_keys[i]);
-        }
-        free(out_keys);
-        deleteManyDfs(dfs, instruction->from.size);
-        return NULL;
-    }
-
 
     char** row_values = malloc(sizeof(char *) * df_out->cols);
-    if(row_values == NULL){
-        deleteDf(df_out);
-        deleteManyDfs(dfs, instruction->from.size);
-        return NULL;
-    }
+    xalloc(row_values)
 
     //coloca os valores de df_out
     for(int i = 0; i < dfs[0]->rows; i++){
@@ -79,8 +48,6 @@ DataFrame* processCommand(Command* instruction){
     }
     free(row_values);
 
-
-    got_null = 0;
     //depois disso, para cada um dos outros arquivos:
     //combina as rows de interesse de df_out e do outro arquivo e coloca num novo df caso 
     //o where permita, e por ultimo coloca esse novo dataframe em df_out para a proxima iteracao
@@ -91,69 +58,31 @@ DataFrame* processCommand(Command* instruction){
 
         //aloca as chaves
         char** out_keys = malloc(sizeof(char*) * out_cols);
-        if(out_keys == NULL){
-            got_null = 1;
-            break;
-        }
+        xalloc(out_keys)
 
         //seta as novas chaves com tanto as do df_out quanto as do dfs[i]
         int j;
         for(j = 0; j < df_out->cols; j++){
 
             out_keys[j] = malloc(sizeof(char) * (strlen(df_out->keys[j])+1));
-            if(out_keys[j] == NULL){
-                got_null = 1;
-                break;
-            }
+            xalloc(out_keys[j])
 
             strcpy(out_keys[j], df_out->keys[j]);
-        }
-
-        if(got_null){
-            for(int k = 0; k < j; k++){
-                free(out_keys[k]);
-            }
-            free(out_keys);
-            break;
         }
 
         for(int k = 0; k < dfs[i]->cols; k++, j++){
 
             out_keys[j] = malloc(sizeof(char) * (strlen(dfs[i]->keys[k]) +1+ strlen(dfs[i]->name)+ 1));
-            if(out_keys[j] == NULL){
-                got_null = 1;
-                break;
-            }
+            xalloc(out_keys[j])
 
             sprintf(out_keys[j], "%s.%s", dfs[i]->name, dfs[i]->keys[k]);
         }
 
-        if(got_null){
-            for(int k = 0; k < j; k++){
-                free(out_keys[k]);
-            }
-            free(out_keys);
-            break;
-        }
-
         //cria o dataframe com as novas chaves
         DataFrame* new_df_out = createDf(out_keys, out_cols);
-        if(new_df_out == NULL){
-            got_null = 1;
-            for(int k = 0; k < out_cols; k++){
-                free(out_keys[k]);
-            }
-            free(out_keys);
-            break;
-        }
-
 
         char** row_values = malloc(sizeof(char *) * new_df_out->cols);
-        if(row_values == NULL){
-            got_null = 1;
-            deleteDf(new_df_out);
-            break;
-        }
+        xalloc(row_values)
 
         //para cada possivel combinacao de rows:
         for(int j = 0; j < dfs[i]->rows; j++){
@@ -184,41 +113,17 @@ DataFrame* processCommand(Command* instruction){
         df_out = new_df_out;
     }
 
-    if(got_null){
-        deleteDf(df_out);
-        deleteManyDfs(dfs, instruction->from.size);
-        return NULL;
-    }
-
     //no final, vamos ter todas as colunas de um dataframe processado com o where,
     //agora so falta pegar os valores do select especificos
 
     out_keys = malloc(sizeof(char*) * (instruction->select_size));
-    if(out_keys == NULL) {
-        deleteDf(df_out);
-        deleteManyDfs(dfs, instruction->from.size);
-        return NULL;
-    }
+    xalloc(out_keys)
 
-    got_null = 0;
     for(i = 0; i < instruction->select_size; i++){
         out_keys[i] = malloc(sizeof(char) * (strlen(instruction->select[i].file_name) + 1 + strlen(instruction->select[i].key)+ 1));
-        if(out_keys == NULL){
-            got_null = 1;
-            break;
-        }
+        xalloc(out_keys[i])
 
         sprintf(out_keys[i], "%s.%s", instruction->select[i].file_name, instruction->select[i].key);
-    }
-
-    if(got_null){
-        for(int j = 0; j < i; j++){
-            free(out_keys[j]);
-        }
-        free(out_keys);
-        deleteManyDfs(dfs, instruction->from.size);
-        deleteDf(df_out);
-        return NULL;
     }
 
     DataFrame* new_df_out = createDf(out_keys, instruction->select_size);
@@ -233,12 +138,7 @@ DataFrame* processCommand(Command* instruction){
     }
 
     row_values = malloc(sizeof(char*) * (new_df_out->cols));
-    if(row_values == NULL){
-        deleteManyDfs(dfs, instruction->from.size);
-        deleteDf(df_out);
-        deleteDf(new_df_out);
-        return NULL;
-    }
+    xalloc(row_values)
 
     for(int i = 0; i < df_out->rows; i++){
         for(int j = 0; j < new_df_out->cols; j++){

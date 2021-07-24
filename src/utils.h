@@ -5,7 +5,8 @@
 #define FROM "from"
 #define WHERE "where"
 
-#define xalloc(p) if(!p){fprintf(stderr, "ERROR: Allocation failed in line %i\n", __LINE__ - 1); exit(-1);} 
+//testa a alocação de um malloc feita na linha anterior
+#define xalloc(p) if(!p){fprintf(stderr, "error: %s at (%s:%i)\n", strerror(errno), __FILE__, __LINE__ - 1); exit(-1);} 
 
 #define DEBUG printf("File: %s - Line: %i\n",__FILE__, __LINE__);
 #define watch(var) printf("%i\n", var)
@@ -23,7 +24,7 @@ typedef struct{
 int separateCharacter(const char* line_buffer, unsigned int cols, char** dest, char* delim);
 
 //descobre o numero de colunas em uma string com delimitador delim
-unsigned int getNcols(char *string, char delimiter);
+unsigned int getNCols(char *string, char delimiter);
 
 //remove um caracter especifico de uma string e subsitui por \0
 void removeChar(char *str, char remove);
