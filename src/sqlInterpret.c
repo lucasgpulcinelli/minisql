@@ -25,6 +25,13 @@ StringArray getInstructions(void){
 
     free(raw_instructions);
 
+    //limpa as strings de caracteres especiais
+    for(int i = 0; i < inst_array.size; i++){
+        removeChar(inst_array.str[i], ',');
+        removeChar(inst_array.str[i], '\"');
+        removeChar(inst_array.str[i], '\n');
+    }
+
     return inst_array;
 }
 
@@ -55,7 +62,6 @@ char **getSourceFiles(StringArray inst_array, int *number_of_files){
 
         strcpy(output[i], inst_array.str[j]);
 
-        removeChar(output[i], ',');
         i++;
     }
     return output;
@@ -73,7 +79,6 @@ Member *getSelection(StringArray inst_array, int *amount){
         char **holder = malloc(sizeof(char *) * 2);
         xalloc(holder)
 
-        removeChar(inst_array.str[j], ',');
         separateCharacter(inst_array.str[j], 2, holder, ".");
 
         output[i].file_name = holder[0];
@@ -113,12 +118,10 @@ Condition *getConditions(StringArray inst_array, int *amount){
         output[i].place->key= holder[1];
 
         j += 2; //pula o "=" 
-        removeChar(inst_array.str[j], ',');
         
-        if(strchr(inst_array.str[j], '\"') != NULL){
-            //se a string tiver um ", a gente sabe que ela e de comparacao constante
+        if(strchr(inst_array.str[j], '.') == NULL){
+            //se a string não tiver um . a gente sabe que ela e de comparacao constante
 
-            removeChar(inst_array.str[j], '\"');
             output[i].comparation_value = inst_array.str[j];
         }else{
             output[i].comparation_value = NULL;
