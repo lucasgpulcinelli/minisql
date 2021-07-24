@@ -12,6 +12,7 @@ StringArray getInstructions(void){
     char *raw_instructions = malloc(sizeof(char) * SIZE);
 
     fgets(raw_instructions, SIZE, stdin);
+    raw_instructions[strlen(raw_instructions)-1] = '\0';
     int allocation_size = strlen(raw_instructions);
 
     raw_instructions = realloc(raw_instructions, sizeof(char) * allocation_size + 1);
@@ -55,7 +56,6 @@ char **getSourceFiles(StringArray inst_array, int *number_of_files){
         strcpy(output[i], inst_array.str[j]);
 
         removeChar(output[i], ',');
-        removeChar(output[i], '\n');
         i++;
     }
     return output;
@@ -95,7 +95,8 @@ Condition *getConditions(StringArray inst_array, int *amount){
     }
 
     int final_index = start + *amount;
-    *amount /= 3;
+    *amount /= 4; //todo o comando tem uma string, um igual, outra string e um "and" ou "or"
+    *amount += 1; //exceto o ultimo que nao teo o "and" ou "or"
 
     Condition *output = malloc(*amount * sizeof(Condition));
     xalloc(output)
@@ -111,11 +112,29 @@ Condition *getConditions(StringArray inst_array, int *amount){
         output[i].place->file_name = holder[0];
         output[i].place->key= holder[1];
 
-        j += 2; //jumps the = sign
+        j += 2; //pula o "=" 
         removeChar(inst_array.str[j], ',');
-        output[i].comparation_value = inst_array.str[j];
-        removeChar(output[i].comparation_value, '\"');
-        removeChar(output[i].comparation_value, '\n');
+        
+        if(strchr(inst_array.str[j], '\"') != NULL){
+            //se a string tiver um ", a gente sabe que ela e de comparacao constante
+
+            removeChar(inst_array.str[j], '\"');
+            output[i].comparation_value = inst_array.str[j];
+        }else{
+            output[i].comparation_value = NULL;
+
+            output[i].comparation_member = malloc(sizeof(Member));
+            xalloc(output[i].comparation_member);
+
+            char* dot_i = strchr(inst_array.str[j], '.');
+
+            output[i].comparation_member->key = dot_i+1;
+            *dot_i = '\0';
+            output[i].comparation_member->file_name = inst_array.str[j];
+
+
+        }
+        j++;
 
         free(holder);
     }
@@ -158,6 +177,10 @@ void freeCommand(Command *instruction){
         free(instruction->where[i].place->file_name);
         free(instruction->where[i].place->key);
         free(instruction->where[i].place);
+
+        if(instruction->where[i].comparation_value == NULL){
+            free(instruction->where->comparation_member);
+        }
     }
     free(instruction->where);
 

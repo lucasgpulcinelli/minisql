@@ -10,6 +10,7 @@ typedef struct {
 typedef struct {
     Member *place;
     char *comparation_value;
+    Member *comparation_member;
 } Condition;
 
 typedef struct {

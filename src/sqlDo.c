@@ -5,6 +5,7 @@
 #include "sqlDo.h"
 #include "dataframe.h"
 
+int rowShould(Command *instruction, DataFrame *df_out, DataFrame* df_in, int iout, int iin);
 
 DataFrame* processCommand(Command* instruction){
     //cria o df com os arquivos do from
@@ -66,7 +67,7 @@ DataFrame* processCommand(Command* instruction){
     //coloca os valores de df_out
     for(int i = 0; i < dfs[0]->rows; i++){
         //caso o where tenha sido passado e ele indique que a row nao deve ser colocada pula essa row
-        if(instruction->where_size > 0 && !rowShould(instruction->where, dfs, i)){
+        if(instruction->where_size > 0 && !rowShould(instruction, NULL, dfs[0], -1, i)){
             continue;    
         }
 
@@ -85,7 +86,7 @@ DataFrame* processCommand(Command* instruction){
     //o where permita, e por ultimo coloca esse novo dataframe em df_out para a proxima iteracao
     for(int i = 1; i < instruction->from.size; i++){
 
-        //descobre quantas colunas o novo df tem que ter
+        
         int out_cols = df_out->cols + dfs[i]->cols;
 
         //aloca as chaves
@@ -158,8 +159,8 @@ DataFrame* processCommand(Command* instruction){
         for(int j = 0; j < dfs[i]->rows; j++){
             for(int k = 0; k < df_out->rows; k++){
                 //caso o where tenha sido passado e ele indique que a row nao deve ser colocada pula essa combinacao
-                if(instruction->where_size > 0 && !rowShould(instruction->where, dfs, i)){
-                    //continue;    
+                if(instruction->where_size > 0 && !rowShould(instruction, df_out, dfs[i], k, j)){
+                    continue;    
                 }
 
                 //copia os valores da linha para o df_out e dfs[i]
@@ -200,8 +201,7 @@ DataFrame* processCommand(Command* instruction){
     }
 
     got_null = 0;
-    for(i = 0; i < instruction->select_size; i++)
-    {
+    for(i = 0; i < instruction->select_size; i++){
         out_keys[i] = malloc(sizeof(char) * (strlen(instruction->select[i].file_name) + 1 + strlen(instruction->select[i].key)+ 1));
         if(out_keys == NULL){
             got_null = 1;
@@ -254,7 +254,78 @@ DataFrame* processCommand(Command* instruction){
     return new_df_out;
 }
 
-int rowShould(Condition *where, DataFrame **dfs, int index){
-    char *holder = dfAt(dfs[0], index, where->place->key); //pega o que está na coluna linha para ser comparado
-    return strcmp(holder, where->comparation_value) == 0; //compara os valores para analisar se aquela linha deve ser incluida
+//analisa se a combinacao da row iout de df_out e iin de df_in deve ser incluida no dataframe final
+//considerando a condicao where de instruction
+//caso df_out seja NULL, analisa apenas o arquivo df_in
+//sempre considera que df_out tem formato Filename.Key e df_in nao esta
+int rowShould(Command *instruction, DataFrame *df_out, DataFrame* df_in, int iout, int iin){
+    
+    //se nao tiver df_out so analisa o df_in
+    if(df_out == NULL){
+        df_out = df_in;
+        iout = iin;
+    }
+
+    int ret_val = 1;
+    
+    for(int i = 0; i < instruction->where_size; i++){
+
+        //se for uma comparacao de variavel 
+        if(instruction->where[i].comparation_value == NULL){
+            
+
+            int place_has_df_in = strcmp(df_in->name, instruction->where[i].place->file_name) == 0;
+
+            //se o where[i] nao envolver o df_in pula
+            if(!(strcmp(df_in->name, instruction->where[i].place->file_name) == 0 ||
+            strcmp(df_in->name, instruction->where[i].comparation_member->file_name) == 0)){
+                continue;
+            }
+
+            Member df_in_member, df_out_member;
+            if(place_has_df_in){
+                df_in_member = *(instruction->where[i].place);
+                df_out_member = *(instruction->where[i].comparation_member);
+            }else{
+                df_in_member = *(instruction->where[i].comparation_member);
+                df_out_member = *(instruction->where[i].place);
+            }
+
+            //pega a chave inteira de df_out
+            char full_key[strlen(df_out_member.file_name)+1+strlen(df_out_member.key)+1];
+            
+            if(df_out != df_in){
+                sprintf(full_key, "%s.%s", df_out_member.file_name, df_out_member.key);
+            }
+            else{
+                strcpy(full_key, df_out_member.key);
+            }
+
+
+            char* value_for_out = dfAt(df_out, iout, full_key);
+            char* value_for_in = dfAt(df_in, iin, df_in_member.key);
+            if(value_for_out == NULL){
+                continue;
+            }
+            
+            if(strcmp(value_for_out, value_for_in) != 0){
+                return 0;
+            }
+
+        }else{
+            //se for uma comparacao com constante so compara
+            
+            if(strcmp(df_in->name, instruction->where[i].place->file_name) != 0){
+                continue;
+            }
+            
+            char* value_for_place = dfAt(df_in, iin, instruction->where[i].place->key);
+            
+            if(strcmp(value_for_place, instruction->where[i].comparation_value) != 0){
+                return 0;
+            }
+        }
+    }
+
+    return ret_val;
 }
