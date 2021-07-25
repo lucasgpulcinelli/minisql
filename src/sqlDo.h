@@ -8,6 +8,4 @@
 //cria um dataframe com as instrucoes de SQL processadas
 DataFrame* processCommand(Command* instruction);
 
-int rowShould(Command *instruction, DataFrame **dfs, int index);
-
 #endif

@@ -1,39 +1,62 @@
+/* 
+Utils são funções gerais que nos ajudam em várias partes do código e não tem um bom local definido
+*/
+
 #include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <stdarg.h>
 
 #include "utils.h"
 #include "sqlInterpret.h"
 
+//funções internas
+
+//remove um char de uma string em uma posição especifica
 void removeAt(char *str, int index);
 
-int separateCharacter(char* line_buffer, unsigned int cols, char** dest, char* delim){
-    int got_null = 0;
-    int i;
-    
-    //cada call de strtok retorna o membro terminando com \0
-    char* member = strtok(line_buffer, delim);
 
-    for(i = 0; i < cols; i++, member = strtok(NULL, delim)){
+void fatalError(int line, char* file, char* fmt, ...){
+    int init_errno = errno; //errno pode mudar de valor em vfprintf, entao guarda o valor inical
+
+    va_list ap;
+
+    va_start(ap, fmt);
+
+    vfprintf(stderr, fmt, ap);
+    fprintf(stderr, "error at line %d of file %s: %s\n", line, file, strerror(init_errno));
+    
+    va_end(ap);
+
+    exit(EXIT_FAILURE);
+}
+
+int separateCharacter(const char* line_buffer, int cols, char** dest, char* delim){
+
+    //cria uma copia de line_buffer para não fazer alterações diretamente nele
+    char *str = malloc(strlen(line_buffer) + 1); 
+    xalloc(str);
+    strcpy(str,line_buffer);    
+
+    //cada call de strtok retorna o membro terminando com \0
+    char* member = strtok(str, delim);
+
+    for(int i = 0; i < cols; i++, member = strtok(NULL, delim)){
 
         dest[i] = malloc(sizeof(char) * (strlen(member)+1));
-        if(dest[i] == NULL){
-            got_null = 1;
-            break;
-        }
+        xalloc(dest[i]);
+
         strcpy(dest[i], member);
     }
 
-    if(got_null){
-        for(int j = 0; j < i; j++){
-            free(dest[i]);
-        }
-        return -1;
-    }
+    free(str);
+
     return 0;
 }
 
-unsigned int getNcols(char *string, char delimiter){
-    unsigned int cols = 1;
+int getNCols(char *string, char delimiter){
+    int cols = 1;
     char* last_occurance = string;
     while((last_occurance = strchr(last_occurance, delimiter)) != NULL){
         last_occurance++; //pula o caractere delimitador

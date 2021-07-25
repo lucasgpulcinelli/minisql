@@ -1,3 +1,7 @@
+/*
+SQL Interpret é responsável por interpretar o comando passado pelo usuário
+É aqui que a struct de comandos, que separa os três diferentes tipos de instrução, é preenchida
+*/
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -8,28 +12,35 @@
 
 #define SIZE 1024
 
+
 StringArray getInstructions(void){
     char *raw_instructions = malloc(sizeof(char) * SIZE);
+    xalloc(raw_instructions);
 
     fgets(raw_instructions, SIZE, stdin);
-    int allocation_size = strlen(raw_instructions);
-
-    raw_instructions = realloc(raw_instructions, sizeof(char) * allocation_size + 1);
+    removeChar(raw_instructions, '\n');
     
     StringArray inst_array;
-    inst_array.size = getNcols(raw_instructions, ' ');
+    inst_array.size = getNCols(raw_instructions, ' ');
+    inst_array.str = malloc(inst_array.size * sizeof(char *));
+    xalloc(inst_array.str);
     
-    inst_array.str = malloc(sizeof(char *) * inst_array.size);
     separateCharacter(raw_instructions, inst_array.size, inst_array.str, " ");
 
     free(raw_instructions);
+
+    //limpa as strings de caracteres especiais
+    for(int i = 0; i < inst_array.size; i++){
+        removeChar(inst_array.str[i], ',');
+        removeChar(inst_array.str[i], '\"');
+    }
 
     return inst_array;
 }
 
 Command *generateCommand(StringArray instructions_array){
     Command *instruction = malloc(sizeof(Command) * 1);
-    xalloc(instruction)
+    xalloc(instruction);
 
     instruction->from.str = getSourceFiles(instructions_array, &instruction->from.size);
     instruction->where = getConditions(instructions_array, &instruction->where_size);
@@ -43,42 +54,34 @@ char **getSourceFiles(StringArray inst_array, int *number_of_files){
     isolateCommand(&start, number_of_files, FROM, inst_array);
 
     char **output = malloc(*number_of_files * sizeof(char *));
-    xalloc(output)
+    xalloc(output);
 
-    int i = 0;
+    //j é usado para dar o loop no array de instruções (start até (start + size))
+    //i é usado para dar loop no array de arquivos (0 até size), n precisa ser limitado em cima pq o do j consegue limita-lo
     int final_index = start + *number_of_files;
-    for (int j = start; j < final_index; j++){
+    for (int j = start, i = 0; j < final_index; j++, i++){
         int aloc_size = strlen(inst_array.str[j]);
         output[i] = malloc(sizeof(char) * aloc_size + 1);
-        xalloc(output[i])
+        xalloc(output[i]);
 
         strcpy(output[i], inst_array.str[j]);
-
-        removeChar(output[i], ',');
-        removeChar(output[i], '\n');
-        i++;
     }
     return output;
 }
 
-Member *getSelection(StringArray inst_array, int *amount){
+Field *getSelection(StringArray inst_array, int *amount){
     int start;
     isolateCommand(&start, amount, SELECT, inst_array);
 
-    Member *output = malloc(*amount * sizeof(Member));
-    xalloc(output)
+    Field *output = malloc(*amount * sizeof(Field));
+    xalloc(output);
 
     int final_index = start + *amount;
-    for (int i = 0, j = start; j < final_index; i++, j++){
-        char **holder = malloc(sizeof(char *) * 2);
-        xalloc(holder)
+    for (int j = start, i = 0; j < final_index; j++, i++){
+        Field *holder = createMemberFromFull(inst_array.str[j]); //utiliza um holder pois output[i] não é um pointer
+        xalloc(holder);
 
-        removeChar(inst_array.str[j], ',');
-        separateCharacter(inst_array.str[j], 2, holder, ".");
-
-        output[i].file_name = holder[0];
-        output[i].key = holder[1];
-
+        output[i] = *holder;
         free(holder);
     }
 
@@ -89,46 +92,44 @@ Condition *getConditions(StringArray inst_array, int *amount){
     int start;
     isolateCommand(&start, amount, WHERE, inst_array);
 
+    //se o start for menor que 0 isso qr dizer q não tem WHERE
     if(start < 0){
         *amount = 0;
         return NULL;
     }
 
     int final_index = start + *amount;
-    *amount /= 3;
+    *amount /= 4; //todo o comando tem uma string, um igual, outra string e um "and" ou "or"
+    *amount += 1; //exceto o ultimo que nao tem o "and" ou "or"
 
     Condition *output = malloc(*amount * sizeof(Condition));
-    xalloc(output)
+    xalloc(output);
 
     for (int j = start, i = 0; j < final_index; j++, i++){
-        char **holder = malloc(sizeof(char *) * 2);
-        xalloc(holder)
-        separateCharacter(inst_array.str[j], 2, holder, ".");
+        output[i].first_member_term = createMemberFromFull(inst_array.str[j]);
 
-        output[i].place = malloc(sizeof(Member));
-        xalloc(output[i].place)
+        j += 2; //pula o "=" e vai para o proximo  
+        
+        if(strchr(inst_array.str[j], '.') == NULL){
+            //se a string não tiver um . a gente sabe que ela e de comparacao constante
+            output[i].second_member_constant = inst_array.str[j];
+        }else{
+            //coloca o second_member_constant como NULL para que quando necessario possamos descobrir se a condição é constante ou variavel
+            output[i].second_member_constant = NULL;
+            output[i].second_member_term = createMemberFromFull(inst_array.str[j]);
+        }
 
-        output[i].place->file_name = holder[0];
-        output[i].place->key= holder[1];
-
-        j += 2; //jumps the = sign
-        //cleans the comparation value from ','; '\"' and '\n'
-        removeChar(inst_array.str[j], ',');
-        removeChar(inst_array.str[j], '\"');
-        removeChar(inst_array.str[j], '\n');
-        output[i].comparation_value = inst_array.str[j];
-
-        free(holder);
+        j++; //pula o "and"
     }
 
     return output;
 }
 
 void isolateCommand(int *start_index, int *size, char *COMMAND, StringArray inst_array){
-    *start_index = -1;
+    *start_index = -1; //inicializa start_index como -1
     int i;
     for (i = 0; i < inst_array.size; i++){
-        if (!strcmp(inst_array.str[i], COMMAND)){
+        if (!strcmp(inst_array.str[i], COMMAND)){ //caso ele encontre o comando altera o start_index para ser a instrução seguinte
             *start_index = i + 1;
             continue;
         }
@@ -136,11 +137,36 @@ void isolateCommand(int *start_index, int *size, char *COMMAND, StringArray inst
         int is_select = !strcmp(inst_array.str[i], SELECT);
         int is_from = !strcmp(inst_array.str[i], FROM);
         int is_where = !strcmp(inst_array.str[i], WHERE);
-        if ((is_select || is_from || is_where) && *start_index != -1){
+        if ((is_select || is_from || is_where) && *start_index != -1){ //se já tivermos encontrado a posição inicial do comando e encontramors algum outro comando
             break;
         }
     }
     *size = i - *start_index;
+}
+
+Field *createMemberFromFull(const char *full){
+    char *str = malloc(strlen(full) + 1);
+    xalloc(str);
+    strcpy(str,full); // faz uma copia do full para não altera-lo
+
+    Field *output = malloc(sizeof(Field));
+    xalloc(output);
+
+    char* dot_i = strchr(str, '.'); //pega o ponteiro de onde está o '.' da string
+
+    output->key = malloc(strlen(dot_i+1) + 1); //cria uma key que vai da string que inicia dps do '.' até o '/0'
+    xalloc(output->key);
+    strcpy(output->key,dot_i+1); //copia essa string de '.'+1 até '/0' para a key
+
+    *dot_i = '\0'; //transforma o '.' em '/0' encurtando a string str
+
+    output->file_name = malloc(strlen(str) + 1); //cria um file name q do tamanho de str cortado até o '.'
+    xalloc(output->file_name);
+    strcpy(output->file_name,str); //como str só vai até o '.' ele é igual ao file_name
+
+    free(str); //libera essa copia do full que está toda quebrada
+
+    return output;
 }
 
 void freeCommand(Command *instruction){
@@ -156,9 +182,15 @@ void freeCommand(Command *instruction){
     free(instruction->select);
 
     for (int i = 0; i < instruction->where_size; i++){
-        free(instruction->where[i].place->file_name);
-        free(instruction->where[i].place->key);
-        free(instruction->where[i].place);
+        free(instruction->where[i].first_member_term->file_name);
+        free(instruction->where[i].first_member_term->key);
+        free(instruction->where[i].first_member_term);
+
+        if(instruction->where[i].second_member_constant == NULL){
+            free(instruction->where[i].second_member_term->file_name);
+            free(instruction->where[i].second_member_term->key);
+            free(instruction->where[i].second_member_term);
+        }
     }
     free(instruction->where);
 
