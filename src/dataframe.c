@@ -245,11 +245,3 @@ void deleteDf(DataFrame* df){
     free(df);
     return;
 }
-
-int getDfIndex(DataFrame **dfs, char *name, int dfs_size){
-    for(int i = 0; i < dfs_size; i++){
-        if(!strcmp(dfs[i]->name, name))
-            return i;
-    }
-    return -1;
-}

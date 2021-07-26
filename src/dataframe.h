@@ -44,6 +44,4 @@ void writeDf(FILE* fptr, DataFrame* df);
 void deleteManyDfs(DataFrame** dflist, int size);
 void deleteDf(DataFrame* df);
 
-int getDfIndex(DataFrame **dfs, char *name, int dfs_size);
-
 #endif

@@ -32,7 +32,7 @@ void fatalError(int line, char* file, char* fmt, ...);
 //descobre o numero de colunas em uma string com delimitador delim
 int getNCols(char *string, char delimiter);
 
-//remove um caracter especifico de uma string e subsitui por \0
+//remove um caracter especifico de uma string
 void removeChar(char *str, char remove);
 
 //desaloca um array de strings da memoria
